@@ -1,0 +1,4406 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Project Manager Under Pressure: Process Model Decision Simulator</title>
+    <style>
+        /* Linear + Gmail + Notion Design System */
+        :root {
+            --bg: #f7f7f5;
+            --surface: #ffffff;
+            --sidebar: #f2f2ef;
+            --border: #deded9;
+            --border-light: #ebebe7;
+            --text: #171717;
+            --text-secondary: #666660;
+            --text-muted: #92928b;
+            --accent: #315bea;
+            --accent-hover: #264ac6;
+            --danger: #c43d3d;
+            --warning: #a56a00;
+            --success: #28734a;
+            --font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #1a1a1e;
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 14px;
+            line-height: 1.45;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Minimal Bezel Frame */
+        .laptop-frame {
+            width: 100%;
+            max-width: 1380px;
+            background: #111111;
+            border-radius: 8px;
+            padding: 6px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .laptop-topbar {
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 0.75rem;
+            color: #777777;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .laptop-screen-bezel {
+            background: var(--bg);
+            border-radius: 4px;
+            overflow: hidden;
+            min-height: 760px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Screen Views */
+        .screen {
+            display: none;
+            width: 100%;
+            min-height: 760px;
+            flex: 1;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- LANDING PAGE (PM Desk Experience) --- */
+        .landing-container {
+            max-width: 840px;
+            margin: auto;
+            padding: 2.25rem 1.5rem;
+            width: 100%;
+        }
+
+        .landing-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 2.25rem 2.25rem;
+        }
+
+        .landing-header-strip {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 0.85rem;
+        }
+
+        .time-badge {
+            font-size: 11.5px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .status-badge {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--danger);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--danger);
+        }
+
+        .landing-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: -0.015em;
+            margin-bottom: 0.25rem;
+        }
+
+        .landing-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .briefing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 0.85rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .brief-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 0.85rem;
+        }
+
+        .brief-card-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .brief-card-val {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-top: 0.15rem;
+        }
+
+        .project-brief-box {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 1rem 1.25rem;
+            border-radius: 5px;
+            margin-bottom: 1.5rem;
+            font-size: 13.5px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .priorities-list {
+            list-style: disc;
+            margin-left: 1.15rem;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 0.4rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.55rem 1.25rem;
+            border-radius: 5px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.12s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: #ffffff;
+            border-color: var(--accent);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            background-color: var(--surface);
+            color: var(--text);
+            border-color: var(--border);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--bg);
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(23, 23, 23, 0.45);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            max-width: 720px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 1.75rem;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 0.65rem;
+        }
+
+        .modal-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.25rem;
+            cursor: pointer;
+        }
+
+        .model-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 0.85rem;
+            margin: 1.25rem 0;
+        }
+
+        .model-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 1rem;
+        }
+
+        .model-card h4 {
+            color: var(--text);
+            margin-bottom: 0.4rem;
+            font-size: 13.5px;
+            font-weight: 600;
+        }
+
+        .model-card ul {
+            list-style: disc;
+            margin-left: 1.15rem;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* --- WORKSPACE LAYOUT & TOPBAR --- */
+        .ws-topbar {
+            height: 48px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.25rem;
+            z-index: 100;
+            position: relative;
+        }
+
+        .ws-brand-area {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text);
+            width: 210px;
+        }
+
+        .ws-logo-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            background: var(--text);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 11px;
+        }
+
+        .ws-search-bar {
+            flex: 1;
+            max-width: 400px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 0.35rem 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .ws-topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: relative;
+        }
+
+        .time-status-pill {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        /* Notifications */
+        .notif-btn {
+            position: relative;
+            background: transparent;
+            border: 1px solid var(--border);
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .notif-btn:hover {
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .notif-badge {
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            background: var(--danger);
+            color: #ffffff;
+            font-size: 9px;
+            font-weight: 700;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .notif-dropdown {
+            display: none;
+            position: absolute;
+            top: 38px;
+            right: 0;
+            width: 320px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            z-index: 200;
+            overflow: hidden;
+        }
+
+        .notif-dropdown.active {
+            display: block;
+        }
+
+        .notif-header {
+            padding: 0.6rem 0.85rem;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border-light);
+            font-weight: 600;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notif-list {
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .notif-item {
+            padding: 0.65rem 0.85rem;
+            border-bottom: 1px solid var(--border-light);
+            font-size: 12.5px;
+        }
+
+        .notif-item.unread {
+            background: #fafafa;
+        }
+
+        .notif-item-title {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.1rem;
+        }
+
+        .notif-item-text {
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        .notif-item-time {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 0.15rem;
+        }
+
+        /* Main Workspace Split */
+        .ws-main {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Left Sidebar Navigation */
+        .ws-sidebar {
+            width: 220px;
+            background: var(--sidebar);
+            border-right: 1px solid var(--border);
+            padding: 1rem 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.15rem;
+        }
+
+        .sidebar-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+
+        .sidebar-section-title {
+            font-size: 10.5px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.45rem 0.5rem;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.1s ease;
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            background-color: var(--bg);
+            color: var(--text);
+        }
+
+        .nav-item.active {
+            background-color: #e6e6e2;
+            color: var(--text);
+            font-weight: 600;
+            border-left: 3px solid var(--accent);
+            padding-left: calc(0.5rem - 3px);
+        }
+
+        .nav-count {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .sidebar-status-block {
+            margin-top: auto;
+            border-top: 1px solid var(--border-light);
+            padding-top: 0.85rem;
+            font-size: 12px;
+        }
+
+        .sidebar-status-title {
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            font-size: 10.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.3rem;
+            color: var(--text-secondary);
+        }
+
+        .status-row strong {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        /* Workspace Content Panel */
+        .ws-content {
+            flex: 1;
+            background: var(--surface);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .content-header {
+            height: 44px;
+            border-bottom: 1px solid var(--border-light);
+            padding: 0 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--surface);
+        }
+
+        .content-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .scenario-progress {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .content-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.25rem 1.5rem;
+        }
+
+        /* Horizontal Project Timeline Component */
+        .timeline-container {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-track {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .timeline-phase {
+            font-size: 11.5px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+            z-index: 2;
+        }
+
+        .timeline-phase.active {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .timeline-phase.completed {
+            color: var(--text);
+        }
+
+        .timeline-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--border);
+            border: 2px solid var(--surface);
+        }
+
+        .timeline-phase.active .timeline-dot {
+            background: var(--accent);
+            box-shadow: 0 0 0 2px var(--surface);
+        }
+
+        .timeline-phase.completed .timeline-dot {
+            background: var(--text);
+        }
+
+        .timeline-connector {
+            position: absolute;
+            top: 15px;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: var(--border-light);
+            z-index: 1;
+        }
+
+        /* INBOX & EMAIL VIEW */
+        .mail-container {
+            display: flex;
+            height: calc(100% - 0px);
+            gap: 0;
+            min-width: 0;
+        }
+
+        .inbox-list {
+            flex: 0 0 350px;
+            width: 350px;
+            border-right: 1px solid var(--border);
+            padding: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: #fbfbfa;
+            min-width: 0;
+        }
+
+        .inbox-list-heading {
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 10px;
+            font-weight: 650;
+            letter-spacing: .07em;
+            color: var(--text-muted);
+        }
+
+        .inbox-row {
+            display: block;
+            width: 100%;
+            min-width: 0;
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-light);
+            cursor: pointer;
+            transition: background-color .1s ease;
+        }
+
+        .inbox-row:hover:not(.locked) {
+            background: #f4f5f2;
+        }
+
+        .inbox-row.active {
+            background: #eef2ef;
+            border-left: 2px solid var(--accent);
+            padding-left: 13px;
+        }
+
+        .inbox-row.locked {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+
+        .inbox-row-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            width: 100%;
+            min-width: 0;
+            margin-bottom: 4px;
+            font-size: 10px;
+            line-height: 1.3;
+            color: var(--text);
+        }
+
+        .inbox-sender {
+            display: block;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-weight: 650;
+        }
+
+        .mail-check {
+            color: var(--accent);
+            margin-right: 5px;
+            font-weight: 700;
+        }
+
+        .inbox-day {
+            flex: 0 0 auto;
+            color: var(--text-muted);
+            font-size: 9px;
+            font-weight: 450;
+            white-space: nowrap;
+        }
+
+        .inbox-row-subject {
+            width: 100%;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1.45;
+            color: var(--text);
+            margin-bottom: 2px;
+        }
+
+        .inbox-row-snippet {
+            width: 100%;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 10px;
+            line-height: 1.45;
+            color: var(--text-muted);
+        }
+
+        .inbox-section-label {
+            padding: 13px 15px 7px;
+            border-top: 1px solid var(--border);
+            font-size: 9px;
+            font-weight: 650;
+            letter-spacing: .08em;
+            color: var(--text-muted);
+        }
+
+        .minor-mail-row {
+            background: #fdfdfc;
+        }
+
+        .email-detail {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .email-subject-heading {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: -0.01em;
+            margin-bottom: 0.5rem;
+        }
+
+        .email-sender-card {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.65rem;
+            border-bottom: 1px solid var(--border-light);
+            font-size: 13px;
+        }
+
+        .sender-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #e0e0dc;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .sender-name {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .sender-meta {
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        .email-text-body {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.65;
+            white-space: pre-line;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Decision Panel (Quiet Line-Separated Block) */
+        .decision-panel {
+            background: transparent;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            padding: 1.25rem 0;
+            margin-top: 1.5rem;
+        }
+
+        .decision-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.85rem;
+        }
+
+        .decision-panel-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.55rem;
+        }
+
+        .option-button {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 0.75rem 0.85rem;
+            text-align: left;
+            color: var(--text);
+            font-size: 13.5px;
+            line-height: 1.45;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.65rem;
+        }
+
+        .option-button:hover {
+            background: #f5f5f2;
+            border-color: #b8b8b0;
+        }
+
+        .option-tag {
+            font-weight: 600;
+            color: var(--text);
+            background: #ebebe7;
+            padding: 0.15rem 0.45rem;
+            border-radius: 3px;
+            font-size: 11px;
+            flex-shrink: 0;
+        }
+
+        /* Consequence Block */
+        .consequence-box {
+            display: none;
+            border: 1px solid var(--border);
+            background: #fafafa;
+            border-radius: 5px;
+            padding: 1rem 1.15rem;
+            margin-top: 1.25rem;
+        }
+
+        .consequence-box.active {
+            display: block;
+        }
+
+        .consequence-box-title {
+            font-weight: 600;
+            margin-bottom: 0.35rem;
+            font-size: 13px;
+            color: var(--text);
+        }
+
+        .consequence-box-desc {
+            font-size: 13.5px;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            line-height: 1.5;
+        }
+
+        .delta-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .delta-pill {
+            font-size: 11.5px;
+            font-weight: 500;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-secondary);
+        }
+
+        /* DASHBOARD & TABLES */
+        .dash-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 0.85rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .dash-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 0.85rem;
+        }
+
+        .dash-card-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .dash-card-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text);
+            margin: 0.2rem 0;
+        }
+
+        .table-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 1rem 1.15rem;
+            margin-top: 1rem;
+        }
+
+        .table-card-title {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        th,
+        td {
+            padding: 0.55rem 0.65rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 600;
+            background: var(--bg);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        /* CHAT, CALENDAR & FILES */
+        .chat-wrapper {
+            display: flex;
+            height: 100%;
+            gap: 1.25rem;
+        }
+
+        .chat-channels {
+            width: 160px;
+            border-right: 1px solid var(--border-light);
+            padding-right: 0.85rem;
+        }
+
+        .channel-link {
+            padding: 0.4rem 0.5rem;
+            border-radius: 4px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            margin-bottom: 0.15rem;
+        }
+
+        .channel-link.active {
+            background: #eeeeeb;
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .chat-feed {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            gap: 0.75rem;
+        }
+
+        .chat-bubble {
+            display: flex;
+            gap: 0.65rem;
+            background: var(--bg);
+            padding: 0.75rem;
+            border-radius: 5px;
+            border: 1px solid var(--border-light);
+        }
+
+        .chat-author {
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text);
+            display: flex;
+            gap: 0.4rem;
+            margin-bottom: 0.15rem;
+        }
+
+        .chat-time {
+            font-weight: 400;
+            color: var(--text-muted);
+            font-size: 11px;
+        }
+
+        .chat-text {
+            font-size: 13.5px;
+            color: var(--text-secondary);
+            line-height: 1.45;
+        }
+
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.65rem;
+        }
+
+        .cal-col {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 0.65rem;
+            min-height: 180px;
+        }
+
+        .cal-col.active-day {
+            border-color: var(--accent);
+            background: #ffffff;
+        }
+
+        .cal-col-header {
+            font-weight: 600;
+            font-size: 12px;
+            margin-bottom: 0.4rem;
+            padding-bottom: 0.2rem;
+            border-bottom: 1px solid var(--border-light);
+            color: var(--text);
+        }
+
+        .cal-item {
+            font-size: 11.5px;
+            background: var(--surface);
+            border: 1px solid var(--border-light);
+            padding: 0.35rem;
+            border-radius: 3px;
+            margin-bottom: 0.35rem;
+            color: var(--text-secondary);
+        }
+
+        .cal-item.highlight {
+            background: #eeeeeb;
+            border-color: var(--accent);
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .file-row-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .file-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: var(--bg);
+            border: 1px solid var(--border-light);
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        /* Tasks / Work Queue View */
+        .task-item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            margin-bottom: 0.55rem;
+            cursor: pointer;
+            transition: background-color 0.1s ease;
+        }
+
+        .task-item-row:hover {
+            background: var(--bg);
+        }
+
+        .task-item-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .task-checkbox {
+            width: 16px;
+            height: 16px;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: var(--text);
+        }
+
+        .task-item-row.done .task-checkbox {
+            background: var(--text);
+            color: #fff;
+        }
+
+        .task-item-row.done .task-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        /* Stakeholder Meeting View */
+        .meeting-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .meeting-header {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.65rem;
+            margin-bottom: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .meeting-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .meeting-speech {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .meeting-speech-bubble {
+            background: var(--surface);
+            border: 1px solid var(--border-light);
+            border-radius: 5px;
+            padding: 0.75rem 0.85rem;
+            font-size: 13.5px;
+            flex: 1;
+        }
+
+        /* RMMM Risk Detail Modal */
+        .rmmm-detail-box {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 13px;
+        }
+
+        .rmmm-detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Closure Sequence View */
+        .closure-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 2rem;
+            max-width: 640px;
+            margin: 3rem auto;
+            text-align: center;
+        }
+
+        .closure-step {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.65rem 0;
+            border-bottom: 1px solid var(--border-light);
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* RESULTS SCREEN */
+        .results-wrapper {
+            max-width: 860px;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .results-main-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 2rem 2rem;
+            text-align: center;
+        }
+
+        .results-profile-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text);
+            margin: 0.4rem 0 1rem 0;
+        }
+
+        .flat-bars-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin: 1.25rem 0;
+        }
+
+        .flat-bar-row {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            text-align: left;
+        }
+
+        .flat-bar-header {
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            color: var(--text);
+        }
+
+        .flat-bar-track {
+            height: 10px;
+            background: var(--border-light);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .flat-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: var(--accent);
+            transition: width 0.4s ease;
+        }
+
+        .report-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.25rem 1.5rem;
+        }
+
+        .report-card h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 0.4rem;
+        }
+
+        .academic-disclaimer {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 0.85rem 1rem;
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 900px) {
+            body {
+                padding: 0;
+            }
+
+            .laptop-frame {
+                border-radius: 0;
+                padding: 0;
+            }
+
+            .laptop-topbar {
+                display: none;
+            }
+
+            .ws-sidebar {
+                width: 60px;
+                padding: 0.5rem;
+            }
+
+            .nav-item-text,
+            .nav-count,
+            .sidebar-status-block {
+                display: none;
+            }
+
+            .mail-container {
+                flex-direction: column;
+            }
+
+            .inbox-list {
+                flex: 0 0 300px;
+                width: 300px;
+                height: 100%;
+                border-right: 1px solid var(--border);
+                border-bottom: none;
+            }
+
+            .cal-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* =========================================================
+   VISUAL REDESIGN
+   Real employee-workstation aesthetic:
+   restrained green, Sora-style system typography,
+   whitespace/dividers instead of dashboard cards.
+   Existing game logic is intentionally untouched.
+   ========================================================= */
+
+        :root {
+            --bg: #f5f5f2;
+            --surface: #ffffff;
+            --sidebar: #f0f1ed;
+            --border: #dfe1dc;
+            --border-light: #e9ebe6;
+            --text: #20211f;
+            --text-secondary: #666a64;
+            --text-muted: #92968f;
+            --accent: #35665d;
+            --accent-hover: #294f48;
+            --accent-light: #edf3f0;
+            --danger: #a33f3f;
+            --danger-light: #fbf2f1;
+            --warning: #8b6536;
+            --warning-light: #faf6ef;
+            --success: #35665d;
+            --success-light: #edf3f0;
+            --font: Sora, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        html,
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 13px;
+        }
+
+        body {
+            letter-spacing: -0.01em;
+        }
+
+        /* The workstation is the whole browser, not a decorative game shell. */
+        .app-viewport {
+            background: var(--bg);
+        }
+
+        /* Quiet application header. */
+        .top-os-bar {
+            height: 48px;
+            background: var(--surface);
+            color: var(--text);
+            padding: 0 22px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .top-os-left {
+            gap: 10px;
+        }
+
+        .brand-mark {
+            color: var(--text);
+            font-size: 13px;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-mark span {
+            color: var(--accent);
+        }
+
+        .app-title-tag {
+            color: var(--text-muted);
+            border-left-color: var(--border);
+            font-size: 10px;
+        }
+
+        .top-os-center {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: transparent;
+            color: var(--text-secondary);
+            padding: 0;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .top-os-right {
+            color: var(--text-secondary);
+            gap: 10px;
+        }
+
+        .user-profile-badge {
+            color: var(--text-secondary);
+            font-size: 11px;
+        }
+
+        .user-avatar-sm {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--accent);
+            font-size: 9px;
+        }
+
+        /* Remove the artificial dashboard timeline. Calendar owns scheduling. */
+        .today-timeline-strip {
+            display: none;
+        }
+
+        .main-workspace {
+            height: calc(100vh - 48px);
+        }
+
+        /* Calm navigation rail. */
+        .sidebar {
+            width: 214px;
+            background: var(--sidebar);
+            border-right: 1px solid var(--border);
+        }
+
+        .sidebar-top {
+            padding: 16px 10px;
+        }
+
+        .nav-section-title {
+            font-size: 9px;
+            letter-spacing: 0.09em;
+            color: #858a83;
+            padding: 14px 10px 6px;
+        }
+
+        .nav-item {
+            padding: 7px 10px;
+            margin: 1px 0;
+            border-radius: 4px;
+            color: #626760;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: rgba(53, 102, 93, 0.06);
+            color: var(--text);
+        }
+
+        .nav-item.active {
+            background: #e4ebe7;
+            color: var(--accent);
+            box-shadow: none;
+            font-weight: 600;
+        }
+
+        .nav-badge {
+            background: transparent;
+            color: var(--text-muted);
+            padding: 0;
+            font-size: 10px;
+        }
+
+        .nav-badge.active-badge {
+            background: transparent;
+            color: var(--accent);
+        }
+
+        /* Health is information, not four floating metric cards. */
+        .sidebar-health-widget {
+            padding: 13px 14px 15px;
+            background: transparent;
+            border-top: 1px solid var(--border);
+        }
+
+        .health-title {
+            font-size: 9px;
+            letter-spacing: 0.09em;
+            color: #858a83;
+            margin-bottom: 9px;
+        }
+
+        .health-metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+
+        .health-metric-box {
+            background: transparent;
+            border: 0;
+            border-bottom: 1px solid var(--border-light);
+            padding: 7px 3px;
+            border-radius: 0;
+        }
+
+        .health-metric-label {
+            font-size: 9px;
+            color: var(--text-muted);
+        }
+
+        .health-metric-val {
+            font-size: 11px;
+            margin-top: 1px;
+        }
+
+        .delta-tag {
+            font-size: 9px;
+        }
+
+        /* Main pane. */
+        .content-area {
+            background: var(--surface);
+        }
+
+        /* Mail is the primary experience. */
+        .mail-list-pane {
+            width: 350px;
+            background: #fbfbfa;
+            border-right: 1px solid var(--border);
+        }
+
+        .mail-item-row {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-light);
+            background: transparent;
+        }
+
+        .mail-item-row:hover {
+            background: #f5f6f3;
+        }
+
+        .mail-item-row.selected {
+            background: var(--surface);
+            border-left: 2px solid var(--accent);
+            padding-left: 14px;
+        }
+
+        .mail-header-line {
+            margin-bottom: 4px;
+        }
+
+        .mail-sender {
+            font-size: 11px;
+            color: var(--text);
+        }
+
+        .mail-item-row.unread .mail-sender {
+            font-weight: 700;
+        }
+
+        .mail-time {
+            font-size: 10px;
+        }
+
+        .mail-subject {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .mail-snippet {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        /* Email reading pane gets generous whitespace. */
+        .mail-reader-pane {
+            padding: 42px 56px 64px;
+            max-width: 900px;
+        }
+
+        .mail-full-subject {
+            font-size: 22px;
+            line-height: 1.25;
+            font-weight: 650;
+            letter-spacing: -0.035em;
+            margin-bottom: 18px;
+        }
+
+        .mail-author-block {
+            gap: 10px;
+            margin-bottom: 28px;
+            padding-bottom: 18px;
+        }
+
+        .avatar-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #e6e8e4;
+            color: #4e534d;
+            font-size: 10px;
+        }
+
+        .avatar-circle.sm {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .avatar-circle.pn {
+            background: #e6e8e4;
+            color: #4e534d;
+        }
+
+        .avatar-circle.rs {
+            background: #e6e8e4;
+            color: #4e534d;
+        }
+
+        .avatar-circle.an {
+            background: #e6e8e4;
+            color: #4e534d;
+        }
+
+        .mail-author-name {
+            font-size: 11px;
+        }
+
+        .mail-author-role {
+            font-size: 10px;
+        }
+
+        .mail-body-text {
+            max-width: 720px;
+            font-size: 13px;
+            line-height: 1.8;
+            color: #30322f;
+        }
+
+        /* Decision area should feel like part of the email, not a game card. */
+        .in-context-action-box {
+            max-width: 720px;
+            margin-top: 38px;
+            padding: 22px 0 0;
+            background: transparent;
+            border: 0;
+            border-top: 1px solid var(--border);
+            border-radius: 0;
+        }
+
+        .action-header-tag {
+            font-size: 9px;
+            letter-spacing: 0.09em;
+            color: var(--accent);
+            margin-bottom: 7px;
+        }
+
+        .action-prompt-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 13px;
+        }
+
+        .option-list {
+            gap: 0;
+            margin-bottom: 16px;
+        }
+
+        .option-card {
+            gap: 10px;
+            padding: 11px 8px;
+            background: transparent;
+            border: 0;
+            border-bottom: 1px solid var(--border-light);
+            border-radius: 0;
+        }
+
+        .option-card:first-child {
+            border-top: 1px solid var(--border-light);
+        }
+
+        .option-card:hover {
+            background: #f5f7f4;
+            border-color: var(--border-light);
+        }
+
+        .option-card input[type="radio"] {
+            accent-color: var(--accent);
+        }
+
+        .option-title {
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .option-desc {
+            font-size: 10px;
+            color: var(--text-muted);
+            line-height: 1.45;
+        }
+
+        .btn-action {
+            background: var(--accent);
+            border-radius: 4px;
+            padding: 9px 15px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .btn-action:hover {
+            background: var(--accent-hover);
+        }
+
+        /* Chat: plain workplace messages, no colored speech bubbles. */
+        .chat-app-pane {
+            background: var(--surface);
+        }
+
+        .chat-channel-bar {
+            height: 46px;
+            padding: 0 22px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            gap: 5px;
+        }
+
+        .channel-tab {
+            color: var(--text-muted);
+            font-size: 11px;
+            padding: 5px 8px;
+            border-radius: 3px;
+        }
+
+        .channel-tab.active {
+            color: var(--text);
+            background: #eef0ed;
+            box-shadow: none;
+        }
+
+        .chat-messages-container {
+            padding: 22px 30px;
+            gap: 18px;
+            max-width: 900px;
+        }
+
+        .chat-row {
+            gap: 10px;
+        }
+
+        .chat-avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #e7e9e5;
+            color: #555a54;
+            font-size: 8px;
+        }
+
+        .chat-author {
+            font-size: 11px;
+        }
+
+        .chat-time {
+            font-size: 9px;
+        }
+
+        .chat-text {
+            font-size: 11px;
+            line-height: 1.55;
+            color: #30322f;
+        }
+
+        .chat-row.pm-message {
+            background: transparent;
+            padding: 0;
+            border-left: 0;
+        }
+
+        /* Secondary apps use simple document-like layouts. */
+        .overview-pane {
+            padding: 36px 44px;
+            gap: 20px;
+            max-width: 1100px;
+        }
+
+        .feed-section {
+            background: transparent;
+            border: 0;
+            border-radius: 0;
+            padding: 0;
+        }
+
+        .feed-title {
+            font-size: 9px;
+            letter-spacing: 0.09em;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+        }
+
+        .feed-list {
+            gap: 0;
+        }
+
+        .feed-item {
+            gap: 18px;
+            font-size: 11px;
+            padding: 11px 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .feed-time {
+            width: 68px;
+            font-family: var(--font);
+            font-size: 9px;
+            color: var(--text-muted);
+        }
+
+        .feed-text {
+            color: #30322f;
+        }
+
+        /* Risk register becomes an actual table, not a card. */
+        .risk-table {
+            font-size: 10px;
+        }
+
+        .risk-table th {
+            padding: 9px 7px;
+            font-size: 9px;
+            letter-spacing: 0.06em;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .risk-table td {
+            padding: 11px 7px;
+        }
+
+        .risk-row:hover {
+            background: #f6f7f4;
+        }
+
+        .badge-status {
+            padding: 2px 5px;
+            border-radius: 2px;
+            font-size: 8px;
+            letter-spacing: 0.03em;
+        }
+
+        .badge-status.open {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .badge-status.mitigated {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .badge-status.monitoring {
+            background: var(--warning-light);
+            color: var(--warning);
+        }
+
+        /* Modal stays quiet and utilitarian. */
+        .modal-backdrop {
+            background: rgba(32, 33, 31, 0.28);
+        }
+
+        .drawer-card {
+            width: 500px;
+            border-radius: 5px;
+            border: 1px solid var(--border);
+            box-shadow: 0 18px 50px rgba(20, 25, 22, 0.14);
+            padding: 25px;
+        }
+
+        .drawer-title {
+            font-size: 14px;
+        }
+
+        .rmmm-box {
+            background: #f6f7f4;
+            padding: 10px;
+            border-radius: 3px;
+        }
+
+        .rmmm-label {
+            font-size: 8px;
+            letter-spacing: 0.08em;
+        }
+
+        .rmmm-val {
+            font-size: 10px;
+        }
+
+        /* Arrival screen: work login, not a game title screen. */
+        .desk-arrival-screen {
+            background: #f5f5f2;
+        }
+
+        .arrival-card {
+            width: 500px;
+            border-radius: 5px;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 30px rgba(20, 25, 22, 0.06);
+            padding: 34px;
+        }
+
+        .arrival-greeting {
+            font-size: 20px;
+            letter-spacing: -0.035em;
+        }
+
+        .arrival-sub {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .arrival-stats {
+            gap: 0;
+            padding: 14px 0;
+            background: transparent;
+            border-top: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+            border-radius: 0;
+        }
+
+        .arrival-stat-num {
+            font-size: 15px;
+        }
+
+        .arrival-stat-lbl {
+            font-size: 8px;
+            letter-spacing: 0.07em;
+        }
+
+        /* Incident banner is restrained. */
+        .focus-incident-banner {
+            background: var(--danger-light);
+            border-bottom: 1px solid #ecd8d5;
+            color: var(--danger);
+            padding: 8px 16px;
+            font-size: 10px;
+        }
+
+        @media (max-width: 850px) {
+            .sidebar {
+                width: 185px;
+            }
+
+            .mail-list-pane {
+                width: 300px;
+            }
+
+            .mail-reader-pane {
+                padding: 30px;
+            }
+        }
+
+
+
+        /* Mail proportions: give the message reader room to breathe. */
+        .mail-container {
+            display: grid !important;
+            grid-template-columns: minmax(270px, 300px) minmax(0, 1fr) !important;
+            width: 100% !important;
+            height: 100% !important;
+            min-width: 0 !important;
+            overflow: hidden !important;
+        }
+
+        .inbox-list {
+            width: auto !important;
+            min-width: 0 !important;
+            max-width: none !important;
+            flex: none !important;
+            overflow-x: hidden !important;
+        }
+
+        .email-detail {
+            min-width: 0 !important;
+            width: auto !important;
+            max-width: none !important;
+            overflow-y: auto !important;
+            padding: 34px 54px 60px !important;
+        }
+
+        .email-subject-heading {
+            max-width: 850px !important;
+            font-size: 22px !important;
+            line-height: 1.3 !important;
+        }
+
+        .email-sender-card,
+        .email-text-body,
+        .decision-panel,
+        .email-detail>div {
+            max-width: 850px;
+        }
+
+        .email-text-body {
+            font-size: 13px !important;
+            line-height: 1.75 !important;
+        }
+
+        .inbox-row {
+            padding: 12px 14px !important;
+        }
+
+        .inbox-row-subject {
+            font-size: 11px !important;
+        }
+
+        .inbox-row-snippet {
+            font-size: 10px !important;
+        }
+
+        @media (max-width: 900px) {
+            .mail-container {
+                grid-template-columns: 270px minmax(0, 1fr) !important;
+            }
+
+            .email-detail {
+                padding: 28px 34px 50px !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ==================== MINIMAL FRAME CONTAINER ==================== -->
+    <div class="laptop-frame">
+        <div class="laptop-topbar">
+            <span>CampusConnect PM Workstation</span>
+            <span id="systemTimeDisplay">08:57 AM</span>
+        </div>
+
+        <div class="laptop-screen-bezel">
+
+            <!-- ==================== SCREEN 1: LANDING PAGE (PM DESK) ==================== -->
+            <div id="landingScreen" class="screen active">
+                <div class="landing-container">
+                    <div class="landing-card">
+                        <div class="landing-header-strip">
+                            <div class="time-badge">
+                                MONDAY · 08:57 AM
+                            </div>
+                            <div class="status-badge">
+                                <span class="status-dot"></span>
+                                ATTENTION REQUIRED
+                            </div>
+                        </div>
+
+                        <h1 class="landing-title">Good morning, Project Manager.</h1>
+                        <p class="landing-subtitle">Welcome to your workstation for <em>CampusConnect — Student Services
+                                Platform</em></p>
+
+                        <div class="briefing-grid">
+                            <div class="brief-card">
+                                <div class="brief-card-label">BUDGET</div>
+                                <div class="brief-card-val">₹10,00,000</div>
+                            </div>
+                            <div class="brief-card">
+                                <div class="brief-card-label">SCHEDULE</div>
+                                <div class="brief-card-val">20 Weeks</div>
+                            </div>
+                            <div class="brief-card">
+                                <div class="brief-card-label">TEAM</div>
+                                <div class="brief-card-val">7 Members</div>
+                            </div>
+                            <div class="brief-card">
+                                <div class="brief-card-label">ALERTS</div>
+                                <div class="brief-card-val" style="color:var(--accent)">3 Unread</div>
+                            </div>
+                        </div>
+
+                        <div class="project-brief-box">
+                            <strong>Project Brief:</strong><br />
+                            You have 12 managerial decisions to execute across 5 simulated workdays. Your choices will
+                            impact cost
+                            variance, schedule delays, risk, team morale, and software quality, evaluating your software
+                            engineering
+                            process model profile (Waterfall, Agile, Spiral, or Incremental).
+
+                            <div style="margin-top:0.75rem; font-weight:600; color:var(--text);">Today's Priorities:
+                            </div>
+                            <ul class="priorities-list">
+                                <li>Review authentication & MFA request from Priya Nair</li>
+                                <li>Attend finance check-in with Rahul Shah (1:30 PM)</li>
+                                <li>Review backend architecture & team capacity</li>
+                            </ul>
+                        </div>
+
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="startSimulation()" id="startBtn">
+                                <span>Start Workday</span>
+                            </button>
+                            <button class="btn btn-secondary" onclick="openModal('howItWorksModal')">
+                                Process Models Guide
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== HOW IT WORKS MODAL ==================== -->
+            <div id="howItWorksModal" class="modal-overlay">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title">Process Models & Simulation Guide</h2>
+                        <button class="close-btn" onclick="closeModal('howItWorksModal')">&times;</button>
+                    </div>
+                    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:1rem; line-height:1.5;">
+                        Crises arrive via Mail, Team Chat, Calendar Meetings, and Dashboard Alerts. Choose responses
+                        based on sound
+                        Software Engineering principles.
+                    </p>
+
+                    <div class="model-grid">
+                        <div class="model-card">
+                            <h4>Waterfall Model</h4>
+                            <ul>
+                                <li>Sequential phase-based execution</li>
+                                <li>Strict requirement baselining & formal change control</li>
+                                <li>Up-front specification & baseline protection</li>
+                            </ul>
+                        </div>
+                        <div class="model-card">
+                            <h4>Agile Methodology</h4>
+                            <ul>
+                                <li>Iterative sprints & adaptive backlog grooming</li>
+                                <li>Customer collaboration over contract negotiations</li>
+                                <li>Scope swapping & rapid response to change</li>
+                            </ul>
+                        </div>
+                        <div class="model-card">
+                            <h4>Spiral Model</h4>
+                            <ul>
+                                <li>Risk-driven iterative development</li>
+                                <li>Rapid prototyping & feasibility benchmarking</li>
+                                <li>Formal RMMM (Risk Mitigation & Monitoring)</li>
+                            </ul>
+                        </div>
+                        <div class="model-card">
+                            <h4>Incremental Model</h4>
+                            <ul>
+                                <li>Staged functional deliveries & early usability</li>
+                                <li>Core baseline release followed by feature additions</li>
+                                <li>Decomposing secondary features into subsequent releases</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div style="text-align:right; margin-top:1.25rem;">
+                        <button class="btn btn-primary" onclick="closeModal('howItWorksModal')">Close Guide</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== SCREEN 2: SIMULATOR WORKSPACE ==================== -->
+            <div id="simulatorScreen" class="screen">
+                <!-- Top Application Bar -->
+                <div class="ws-topbar">
+                    <div class="ws-brand-area">
+                        <div class="ws-logo-icon">PM</div>
+                        <span>CampusConnect</span>
+                    </div>
+
+                    <div class="ws-search-bar">
+                        <span>Search project workspace...</span>
+                    </div>
+
+                    <div class="ws-topbar-right">
+                        <div class="time-status-pill" id="timeStatusPill">
+                            Day 1 · Monday · 09:15 AM
+                        </div>
+
+                        <!-- Notifications -->
+                        <div class="notif-btn" onclick="toggleNotifications()">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                            </svg>
+                            <span class="notif-badge" id="notifBadge">1</span>
+
+                            <div class="notif-dropdown" id="notifDropdown">
+                                <div class="notif-header">
+                                    <span>Workspace Alerts</span>
+                                    <span style="font-size:11px; color:var(--accent); cursor:pointer;"
+                                        onclick="markNotificationsRead(event)">Mark all read</span>
+                                </div>
+                                <div class="notif-list" id="notifList">
+                                    <!-- Rendered dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Workspace Split -->
+                <div class="ws-main">
+                    <!-- Left Navigation Drawer -->
+                    <div class="ws-sidebar">
+                        <div class="sidebar-section">
+                            <div class="sidebar-section-title">MAIL & TASKS</div>
+                            <div class="nav-item active" id="nav-mail" onclick="switchApp('mail')">
+                                <span class="nav-item-text">Inbox</span>
+                                <span class="nav-count" id="mailBadge">1</span>
+                            </div>
+                            <div class="nav-item" id="nav-tasks" onclick="switchApp('tasks')">
+                                <span class="nav-item-text">Work Queue</span>
+                                <span class="nav-count" id="taskBadge">4</span>
+                            </div>
+                        </div>
+
+                        <div class="sidebar-section">
+                            <div class="sidebar-section-title">PROJECT</div>
+                            <div class="nav-item" id="nav-chat" onclick="switchApp('chat')">
+                                <span class="nav-item-text">Team Chat</span>
+                            </div>
+                            <div class="nav-item" id="nav-project" onclick="switchApp('project')">
+                                <span class="nav-item-text">Overview & Risks</span>
+                            </div>
+                            <div class="nav-item" id="nav-decisions" onclick="switchApp('decisions')">
+                                <span class="nav-item-text">Decisions</span>
+                            </div>
+                        </div>
+
+                        <div class="sidebar-section">
+                            <div class="sidebar-section-title">WORKSPACE</div>
+                            <div class="nav-item" id="nav-calendar" onclick="switchApp('calendar')">
+                                <span class="nav-item-text">Calendar</span>
+                            </div>
+                            <div class="nav-item" id="nav-files" onclick="switchApp('files')">
+                                <span class="nav-item-text">Files</span>
+                            </div>
+                        </div>
+
+                        <!-- Quiet Sidebar Status Block -->
+                        <div class="sidebar-status-block">
+                            <div class="sidebar-status-title">PROJECT STATUS</div>
+                            <div class="status-row"><span>Budget:</span><strong id="sideBudget">₹10,00,000</strong>
+                            </div>
+                            <div class="status-row"><span>Schedule:</span><strong id="sideSchedule">On track</strong>
+                            </div>
+                            <div class="status-row"><span>Risk:</span><strong id="sideRisk">20%</strong></div>
+                            <div class="status-row"><span>Quality:</span><strong id="sideQuality">80%</strong></div>
+                        </div>
+                    </div>
+
+                    <!-- Right Main Workspace Panel -->
+                    <div class="ws-content">
+                        <div class="content-header">
+                            <div class="content-title" id="contentTitle">Inbox</div>
+                            <div class="scenario-progress" id="scenarioProgressBadge">09:15 AM · Monday</div>
+                        </div>
+
+                        <div class="content-body" id="contentBody">
+                            <!-- Rendered dynamically by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== CLOSURE SEQUENCE SCREEN ==================== -->
+            <div id="closureScreen" class="screen">
+                <div class="closure-box">
+                    <div
+                        style="font-size:11px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">
+                        CAMPUSCONNECT PROJECT HANDOVER</div>
+                    <h2 style="font-size:1.5rem; font-weight:600; margin:0.3rem 0 1rem 0;">Project Closure Sequence</h2>
+
+                    <div id="closureStepsContainer">
+                        <!-- Rendered by JS -->
+                    </div>
+
+                    <div style="margin-top:1.5rem;">
+                        <button class="btn btn-primary" onclick="showResultsScreen()" id="proceedResultsBtn"
+                            style="display:none;">
+                            <span>View Academic Process-Model Review &rarr;</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== SCREEN 3: RESULTS & EVALUATION ==================== -->
+            <div id="resultsScreen" class="screen">
+                <div class="results-wrapper">
+                    <div class="results-main-card">
+                        <div class="time-badge" style="margin-bottom:0.5rem;">Simulation Complete</div>
+                        <h1 style="font-size:1.6rem; font-weight:600; margin-bottom:0.25rem;">Project Manager
+                            Performance Review
+                        </h1>
+                        <p style="color:var(--text-muted); font-size:13px;">CampusConnect Student Services Platform —
+                            Decision
+                            Profile Analysis</p>
+
+                        <div class="results-profile-title" id="dominantTitle">
+                            Agile-Oriented Decision Profile
+                        </div>
+
+                        <div class="flat-bars-container" id="modelBarsContainer">
+                            <!-- Rendered by JS -->
+                        </div>
+
+                        <p style="font-size:13.5px; color:var(--text-secondary); max-width:740px; margin:auto; line-height:1.5;"
+                            id="profileDescription">
+                            <!-- Rendered by JS -->
+                        </p>
+
+                        <div class="academic-disclaimer">
+                            <strong>Assessment Note:</strong> This profile reflects your managerial decision tendencies
+                            across the 12
+                            specific crisis scenarios simulated. Real-world software engineering projects frequently
+                            combine practices
+                            from Waterfall, Agile, Spiral, and Incremental models depending on risk profile, domain
+                            complexity, and
+                            regulatory constraints.
+                        </div>
+                    </div>
+
+                    <div class="report-card">
+                        <h3>Decision Evidence & Rationales</h3>
+                        <ul id="evidenceList"
+                            style="list-style:disc; margin-left:1.15rem; color:var(--text-secondary); font-size:13px; display:flex; flex-direction:column; gap:0.5rem;">
+                            <!-- Rendered by JS -->
+                        </ul>
+                    </div>
+
+                    <div class="report-card">
+                        <h3>Final Project Health Metrics</h3>
+                        <div class="dash-metrics-grid" id="finalMetricsGrid">
+                            <!-- Rendered by JS -->
+                        </div>
+                    </div>
+
+                    <div class="report-card">
+                        <h3>Decision Log</h3>
+                        <div style="overflow-x:auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Crisis Scenario Title</th>
+                                        <th>Channel</th>
+                                        <th>Selected Response</th>
+                                        <th>Primary Model</th>
+                                        <th>Consequence Logged</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyTableBody">
+                                    <!-- Rendered by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div style="text-align:center; margin:1rem 0 2rem 0;">
+                        <button class="btn btn-primary" onclick="restartSimulation()">
+                            Start New Simulation
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ==================== JAVASCRIPT GAME ENGINE ==================== -->
+    <script>
+        /* --- GAME STATE OBJECT --- */
+        let gameState = {
+            day: 1,
+            time: "08:57 AM",
+            currentScenario: 0,
+            activeApp: "mail",
+            activeChatChannel: "development",
+
+            // Core Constraints
+            budget: 1000000,
+            deadlineWeeks: 20,
+            weeksDelayed: 0,
+            risk: 20,
+            morale: 80,
+            client: 80,
+            quality: 80,
+
+            // Hidden Stakeholder Relationship Memory
+            stakeholders: {
+                clientTrust: 80,
+                teamConfidence: 80,
+                financeConfidence: 80
+            },
+
+            // Persistent Cause -> Effect Flags
+            flags: {
+                databaseRiskAddressed: false,
+                securityRiskMitigated: false,
+                developerKnowledgeShared: false,
+                scopeControlled: false,
+                clientTrustDamaged: false,
+                teamOverworked: false,
+                technicalDebtHigh: false,
+                requirementsUnstable: false,
+                budgetBufferLow: false
+            },
+
+            // Work Queue / Tasks
+            tasks: [
+                { id: 't1', text: 'Review MFA authentication request', channel: 'mail', scenarioId: 1, done: false },
+                { id: 't2', text: 'Finance check-in with Rahul Shah', channel: 'calendar', scenarioId: 2, done: false },
+                { id: 't3', text: 'Senior developer staffing review', channel: 'mail', scenarioId: 3, done: false },
+                { id: 't4', text: 'Investigate DB concurrency deadlocks', channel: 'chat', scenarioId: 4, done: false }
+            ],
+
+            // Interruption State
+            activeInterruption: null,
+            interruptionHandled: false,
+
+            // Multi-Channel Chats
+            chats: {
+                general: [
+                    { author: "Vikram Das", time: "08:50 AM", text: "Welcome to CampusConnect Sprint 4. Let's make sure core deliverables stay on track." }
+                ],
+                development: [
+                    { author: "Sarah Menon", time: "08:55 AM", text: "Team, standup complete. Please check inbox for latest client updates." }
+                ],
+                design: [
+                    { author: "Meera Kapoor", time: "08:52 AM", text: "UI design wireframes for Student Services Portal ready for feedback." }
+                ],
+                qa: [
+                    { author: "Ananya Iyer", time: "08:54 AM", text: "Automated test suite configured. Staging build green." }
+                ]
+            },
+
+            scores: { waterfall: 0, agile: 0, spiral: 0, incremental: 0 },
+            decisions: [],
+            notifications: [
+                { id: 1, type: "mail", title: "New Email: Priya Nair", text: "Re: Authentication & Service Request", time: "09:15 AM", read: false }
+            ],
+            hasAnsweredCurrent: false,
+            selectedRiskDetail: null,
+            isClosureSequence: false
+        };
+
+
+        /* --- QUIET WORKPLACE TRAFFIC: non-scored ambient mail/chat --- */
+        const minorEmails = [
+            { sender: "Meera Kapoor", role: "UI/UX Designer", time: "08:32 AM", title: "Login screen copy", preview: "I've updated the login error messages and pushed the copy for review.", body: `Hi,\n\nI've updated the login error states and pushed the revised copy to the design folder.\n\nNothing blocking from my side. If the MFA wording changes after the client discussion, I'll update the screens accordingly.` },
+            { sender: "Vikram Das", role: "Product Owner", time: "09:02 AM", title: "Sprint 1 check-in", preview: "Core authentication and the student profile are still on track.", body: `Morning,\n\nQuick check-in before stand-up: core authentication and the student profile flow are still tracking against the Sprint 1 plan.\n\nPlease flag anything that could affect the Week 20 target.` },
+            { sender: "Sarah Menon", role: "Lead Developer", time: "11:12 AM", title: "Staging deployment complete", preview: "The latest build is on staging. No deployment errors.", body: `Hi,\n\nThe latest build is now on staging. Deployment completed cleanly and the smoke checks passed.\n\nQA can use the new build for the afternoon regression pass.` },
+            { sender: "Ananya Iyer", role: "QA Lead", time: "12:06 PM", title: "Regression pass update", preview: "No new blocker defects in this morning's smoke test.", body: `Manager,\n\nMorning smoke testing is complete. No new blocker defects were found in the latest build.\n\nI'll continue the regression pass after lunch and report anything that needs attention.` },
+            { sender: "Rahul Shah", role: "Finance & Operations", time: "02:20 PM", title: "Budget snapshot", preview: "Current spend is within the weekly forecast.", body: `Manager,\n\nCurrent project spend is within this week's forecast. No immediate finance action is required.\n\nI'll send another snapshot after the next infrastructure change.` },
+            { sender: "Priya Nair", role: "Client Representative", time: "04:10 PM", title: "Friday review agenda", preview: "I've added authentication and the reporting dashboard to Friday's review.", body: `Hi,\n\nI've added the authentication flow and reporting dashboard to Friday's review agenda.\n\nIf there are any areas you want us to prepare feedback on in advance, send them across.` }
+        ];
+
+        const minorChatMessages = [
+            { channel: "general", author: "Vikram Das", time: "08:41 AM", text: "Reminder: stand-up is at 9. Please keep updates to blockers and today's priorities." },
+            { channel: "development", author: "Arjun Rao", time: "09:37 AM", text: "I've got the latest API build running locally. No issues with the current student-profile endpoints." },
+            { channel: "design", author: "Meera Kapoor", time: "10:18 AM", text: "Small copy update is ready for review. I kept the error states consistent across login and password reset." },
+            { channel: "qa", author: "Ananya Iyer", time: "11:26 AM", text: "Smoke test is clean so far. I'll post the regression summary once the remaining flows finish." },
+            { channel: "general", author: "Sarah Menon", time: "12:14 PM", text: "Heads-up: staging will be refreshed after lunch. Please save anything you are testing there." },
+            { channel: "development", author: "Arjun Rao", time: "02:48 PM", text: "Connection-pool metrics look normal in staging. I'll keep an eye on them during the next load test." },
+            { channel: "qa", author: "Ananya Iyer", time: "04:32 PM", text: "No blocker defects from the afternoon pass. Two minor UI issues are logged for the next cleanup cycle." },
+            { channel: "general", author: "Vikram Das", time: "05:05 PM", text: "Thanks everyone. Please update your task status before signing off." }
+        ];
+
+        /* --- RMMM RISK REGISTER DATASET --- */
+        const rmmmRisks = [
+            {
+                id: "RSK-01",
+                title: "Database Scalability & Concurrency Failure",
+                probability: "HIGH",
+                impact: "CRITICAL",
+                owner: "Arjun Rao (Backend Dev)",
+                flagKey: "databaseRiskAddressed",
+                mitigation: "Deploy Redis caching prototype and load-test under 15,000 simulated logins.",
+                monitoring: "Automated load testing during Sprint regression runs.",
+                contingency: "Throttle background worker jobs and queue login sessions during registration."
+            },
+            {
+                id: "RSK-02",
+                title: "SQL Injection & Authentication Flaws",
+                probability: "MEDIUM",
+                impact: "CRITICAL",
+                owner: "Ananya Iyer (QA Lead)",
+                flagKey: "securityRiskMitigated",
+                mitigation: "Enforce parameterized ORM queries, SAST scanning, and security patch swarming.",
+                monitoring: "Continuous penetration scanning on auth endpoints.",
+                contingency: "Isolate online auth module for Release 1.1 patch while launching offline modules."
+            },
+            {
+                id: "RSK-03",
+                title: "Single-Point Knowledge Loss (Developer)",
+                probability: "HIGH",
+                impact: "HIGH",
+                owner: "Sarah Menon (Lead Dev)",
+                flagKey: "developerKnowledgeShared",
+                mitigation: "Document API gateway schemas and conduct technical cross-training workshops.",
+                monitoring: "Weekly peer code review and schema ownership audits.",
+                contingency: "Decompose open backend tasks into decoupled micro-tasks for junior devs."
+            },
+            {
+                id: "RSK-04",
+                title: "Scope Creep & Requirement Volatility",
+                probability: "HIGH",
+                impact: "MEDIUM",
+                owner: "Vikram Das (Product Owner)",
+                flagKey: "scopeControlled",
+                mitigation: "Invoke formal Change Control Board (CCB) and perform product backlog grooming.",
+                monitoring: "Sprint backlog change tracking and stakeholder steering syncs.",
+                contingency: "Stage non-critical feature requests into Release 2 and Release 3 increments."
+            }
+        ];
+
+        /* --- MINOR INTERRUPTIONS DATASET --- */
+        const minorInterruptions = [
+            {
+                id: "m1",
+                afterScenario: 2,
+                time: "11:42 AM",
+                channel: "chat",
+                sender: "Arjun Rao",
+                text: "Quick heads-up PM — the staging API credentials expired and blocked automated QA tests.",
+                choices: [
+                    { text: "Authorize emergency credential renewal immediately (-₹5,000).", effect: { budget: -5000, risk: -1 } },
+                    { text: "Ask DevOps to handle it during their afternoon cycle.", effect: { risk: 1 } }
+                ]
+            },
+            {
+                id: "m2",
+                afterScenario: 5,
+                time: "02:15 PM",
+                channel: "chat",
+                sender: "Meera Kapoor",
+                text: "The university marketing team sent revised branding guidelines and color assets again.",
+                choices: [
+                    { text: "Update CSS tokens in current sprint (-₹10,000, +2% client trust).", effect: { budget: -10000, client: 2 } },
+                    { text: "Defer asset update to post-launch maintenance.", effect: { morale: 1 } }
+                ]
+            },
+            {
+                id: "m3",
+                afterScenario: 9,
+                time: "11:20 AM",
+                channel: "chat",
+                sender: "Ananya Iyer",
+                text: "CI build pipeline reported a transient network timeout on the staging cluster.",
+                choices: [
+                    { text: "Re-run build pipeline immediately.", effect: { quality: 1 } },
+                    { text: "Bypass non-blocking staging tests to preserve momentum.", effect: { risk: 2 } }
+                ]
+            }
+        ];
+
+        /* --- 12 SCENARIO DATASET --- */
+        const scenarios = [
+            {
+                id: 1,
+                day: 1,
+                time: "09:15 AM",
+                phase: "Requirements",
+                channel: "mail",
+                sender: "Priya Nair",
+                senderRole: "Client Representative",
+                subject: "Re: Authentication & Service Request",
+                preview: "The client requests a major feature that was not included in approved requirements...",
+                description: `The university administration has formally requested a major OAuth2-based Multi-Factor Authentication (MFA) and Single Sign-On (SSO) feature. This feature was not included in the original approved requirements baseline.
+
+Our lead architect estimates this will take approximately 2 full development weeks and could create a cascading schedule delay if attempted right now.`,
+                chatMessages: [
+                    { author: "Priya Nair", time: "09:10 AM", text: "We need OAuth2 MFA added to CampusConnect immediately for security compliance." },
+                    { author: "Sarah Menon", time: "09:12 AM", text: "That wasn't in our baseline spec! It will delay core modules by at least 2 weeks." }
+                ],
+                choices: [
+                    {
+                        opt: "A",
+                        text: "Reject the change for current release. Requirements were baselined and must pass formal change control.",
+                        effects: { budget: 0, scheduleDelay: 0, risk: -2, morale: 1, client: -8, quality: 0 },
+                        score: { waterfall: 3, agile: 0, spiral: 0, incremental: 1 },
+                        consequence: "The current scope remains strictly stable and the 20-week schedule is protected. However, the client is disappointed.",
+                        primaryModel: "Waterfall",
+                        setFlag: "clientTrustDamaged",
+                        chatReaction: "Sarah: Scope is locked. Good call on protecting our 20-week baseline date."
+                    },
+                    {
+                        opt: "B",
+                        text: "Discuss with client immediately and swap out a lower-priority feature from current backlog.",
+                        effects: { budget: -20000, scheduleDelay: 0, risk: 1, morale: -1, client: 6, quality: 0 },
+                        score: { waterfall: 0, agile: 3, spiral: 0, incremental: 2 },
+                        consequence: "The client is pleased that their new requirement is accepted, but postponing another feature causes backlog reshuffling.",
+                        primaryModel: "Agile",
+                        chatReaction: "Arjun: Backlog updated. We swapped out hostel reports for MFA."
+                    },
+                    {
+                        opt: "C",
+                        text: "Perform risk assessment and build rapid 3-day technical prototype before committing.",
+                        effects: { budget: -40000, scheduleDelay: 1, risk: -7, morale: 1, client: 3, quality: 2 },
+                        score: { waterfall: 0, agile: 1, spiral: 3, incremental: 0 },
+                        consequence: "Prototyping consumes ₹40,000 and 1 week delay, but technical risk is significantly reduced.",
+                        primaryModel: "Spiral",
+                        chatReaction: "Sarah: Prototype build underway. We'll benchmark latency before committing code."
+                    },
+                    {
+                        opt: "D",
+                        text: "Keep current initial release scope unchanged and assign authentication feature to Increment 2.",
+                        effects: { budget: -10000, scheduleDelay: 0, risk: -1, morale: 1, client: 3, quality: 0 },
+                        score: { waterfall: 0, agile: 1, spiral: 0, incremental: 3 },
+                        consequence: "Release 1 remains on schedule while providing the client a roadmap for Increment 2.",
+                        primaryModel: "Incremental",
+                        chatReaction: "Vikram: Increment 2 backlog confirmed with client for MFA feature."
+                    }
+                ]
+            },
+            {
+                id: 2,
+                day: 1,
+                time: "01:30 PM",
+                phase: "Requirements",
+                channel: "mail",
+                sender: "Rahul Shah",
+                senderRole: "Finance Manager",
+                subject: "Budget Forecast Warning: Projected Overrun",
+                preview: "Finance audit indicates projected cost overruns due to extended cloud infrastructure...",
+                description: `Our mid-quarter financial audit indicates that cloud infrastructure testing and third-party API licensing are tracking over budget. If we continue at the current spending rate, the project will exceed its ₹10,00,000 budget by ₹1,00,000 before delivery.
+
+Finance requires an immediate managerial strategy to manage project expenditure.`,
+                chatMessages: [
+                    { author: "Rahul Shah", time: "01:25 PM", text: "Finance alert: Cloud testing costs are spiking 15% higher than projected." },
+                    { author: "Arjun Rao", time: "01:28 PM", text: "We need those staging clusters for load testing. Can we optimize instance sizes?" }
+                ],
+                choices: [
+                    {
+                        opt: "A",
+                        text: "Freeze new expenditure, enforce strict budgetary approval controls, and audit every expense.",
+                        effects: { budget: 30000, scheduleDelay: 0, risk: -2, morale: -1, client: 0, quality: 0 },
+                        score: { waterfall: 3, agile: 0, spiral: 1, incremental: 1 },
+                        consequence: "Financial spending is brought under strict control, though team agility is slightly reduced.",
+                        primaryModel: "Waterfall",
+                        setFlag: "budgetBufferLow",
+                        chatReaction: "Rahul: Financial controls instituted. Spending variance normalized."
+                    },
+                    {
+                        opt: "B",
+                        text: "Collaborate with stakeholders to identify and cut lower-value secondary feature requirements.",
+                        effects: { budget: 70000, scheduleDelay: 0, risk: -1, morale: 1, client: -2, quality: 1 },
+                        score: { waterfall: 0, agile: 3, spiral: 0, incremental: 2 },
+                        consequence: "Project cost overrun is substantially reduced by eliminating low-value features.",
+                        primaryModel: "Agile",
+                        chatReaction: "Vikram: Secondary requirements pruned. Cost baseline restored."
+                    },
+                    {
+                        opt: "C",
+                        text: "Conduct detailed cost-risk drivers analysis to identify high-variance activities and establish reserves.",
+                        effects: { budget: -20000, scheduleDelay: 1, risk: -8, morale: 0, client: 0, quality: 1 },
+                        score: { waterfall: 0, agile: 1, spiral: 3, incremental: 0 },
+                        consequence: "Detailed financial risk analysis consumes short-term budget, but isolates root cost drivers.",
+                        primaryModel: "Spiral",
+                        chatReaction: "Rahul: Cost-driver matrix completed. High-variance risks mitigated."
+                    },
+                    {
+                        opt: "D",
+                        text: "Prioritize completion of core revenue-generating modules first, deferring secondary modules.",
+                        effects: { budget: 50000, scheduleDelay: 0, risk: -2, morale: 2, client: 4, quality: 0 },
+                        score: { waterfall: 0, agile: 1, spiral: 0, incremental: 3 },
+                        consequence: "Core system modules are delivered within available funds while non-critical modules are queued.",
+                        primaryModel: "Incremental",
+                        chatReaction: "Sarah: Core release funding protected. Deferring secondary modules."
+                    }
+                ]
+            },
+            {
+                id: 3,
+                day: 2,
+                time: "09:10 AM",
+                phase: "Development",
+                channel: "mail",
+                sender: "Sarah Menon",
+                senderRole: "Lead Developer",
+                subject: "Key Backend Developer Resignation",
+                preview: "Our lead backend architect has submitted a resignation letter effective immediately...",
+                description: `Our senior backend architect, who owned the core database schemas and API gateway, has unexpectedly resigned for an international offer.
+
+This leaves a major skills and knowledge gap in critical ongoing backend tasks. The team needs immediate direction on how to redistribute work and mitigate single-point knowledge dependencies.`,
+                chatMessages: [
+                    { author: "Sarah Menon", time: "09:05 AM", text: "Team, Dev Lead Rakesh resigned today. He held all the schema logic in his head." },
+                    { author: "Meera Kapoor", time: "09:08 AM", text: "That's a massive risk. Who takes over the API gateway?" }
+                ],
+                choices: [
+                    {
+                        opt: "A",
+                        text: "Reassign open tasks to existing developers strictly according to original baseline plan.",
+                        effects: { budget: -10000, scheduleDelay: 1, risk: 4, morale: -5, client: 0, quality: -2 },
+                        score: { waterfall: 3, agile: 0, spiral: 0, incremental: 1 },
+                        consequence: "The project plan structure is maintained, but heavy workload reassignment degrades team morale.",
+                        primaryModel: "Waterfall",
+                        setFlag: "teamOverworked",
+                        chatReaction: "Sarah: Tasks reassigned per schedule, but developers are feeling stressed."
+                    },
+                    {
+                        opt: "B",
+                        text: "Convene immediate team self-organization session to re-estimate tasks and redistribute responsibilities.",
+                        effects: { budget: -10000, scheduleDelay: 0, risk: -2, morale: 5, client: 0, quality: 1 },
+                        score: { waterfall: 0, agile: 3, spiral: 0, incremental: 1 },
+                        consequence: "The team dynamically adapts to fill the void. Morale increases through shared ownership.",
+                        primaryModel: "Agile",
+                        chatReaction: "Arjun: Peer distribution workshop went great. Ownership shared!"
+                    },
+                    {
+                        opt: "C",
+                        text: "Execute thorough knowledge-gap risk assessment, document single-point dependencies, and cross-train.",
+                        effects: { budget: -25000, scheduleDelay: 1, risk: -10, morale: 1, client: 0, quality: 3 },
+                        score: { waterfall: 1, agile: 0, spiral: 3, incremental: 0 },
+                        consequence: "Investing time in risk analysis and documentation permanently eliminates single-point knowledge failures.",
+                        primaryModel: "Spiral",
+                        setFlag: "developerKnowledgeShared",
+                        chatReaction: "Sarah: Cross-training documentation completed. Single-point risk mitigated!"
+                    },
+                    {
+                        opt: "D",
+                        text: "Decompose remaining backend work into smaller, decoupled micro-tasks for junior staff.",
+                        effects: { budget: -15000, scheduleDelay: 0, risk: -3, morale: 3, client: 1, quality: 1 },
+                        score: { waterfall: 0, agile: 1, spiral: 0, incremental: 3 },
+                        consequence: "Decomposing modules into smaller increments allows remaining developers to deliver progress steadily.",
+                        primaryModel: "Incremental",
+                        chatReaction: "Arjun: Micro-task breakdown allows us to deliver backend modules steadily."
+                    }
+                ]
+            },
+            {
+                id: 4,
+                day: 2,
+                time: "02:00 PM",
+                phase: "Development",
+                channel: "chat",
+                sender: "Arjun Rao",
+                senderRole: "Backend Developer",
+                subject: "Database Load Test Failure & Scalability Risk",
+                preview: "Load testing reveals severe performance degradation at 8,000 concurrent users...",
+                description: `Load testing on the current PostgreSQL database schema shows severe latency and query deadlocks once concurrent student logins cross 8,000 users. Our production requirement calls for supporting 15,000 concurrent users during campus registration peaks.
+
+Continuing development without resolving this architectural uncertainty presents a severe project threat.`,
+                chatMessages: [
+                    { author: "Arjun Rao", time: "01:55 PM", text: "Guys, DB load test failed hard at 8,000 users. Query deadlocks everywhere!" },
+                    { author: "Sarah Menon", time: "01:58 PM", text: "Our SLA requires 15,000 concurrent logins during course registration week. We need a fix." }
+                ],
+                choices: [
+                    {
+                        opt: "A",
+                        text: "Instruct team to proceed with current database technology as designed in initial specification.",
+                        effects: { budget: 0, scheduleDelay: 0, risk: 12, morale: 0, client: 0, quality: -5 },
+                        score: { waterfall: 3, agile: 0, spiral: 0, incremental: 0 },
+                        consequence: "Immediate schedule disruption is avoided, but unresolved database scalability risk remains.",
+                        primaryModel: "Waterfall",
+                        setFlag: "technicalDebtHigh",
+                        chatReaction: "Arjun: Proceeding with existing DB, but deadlocks will be a risk during launch."
+                    },
+                    {
+                        opt: "B",
+                        text: "Build rapid spike prototype with Redis caching and load-test it under 15,000 simulated users.",
+                        effects: { budget: -50000, scheduleDelay: 1, risk: -15, morale: 1, client: 1, quality: 4 },
+                        score: { waterfall: 0, agile: 1, spiral: 3, incremental: 0 },
+                        consequence: "Prototyping costs 1 week delay and ₹50,000, but proves the architectural fix empirically.",
+                        primaryModel: "Spiral",
+                        setFlag: "databaseRiskAddressed",
+                        chatReaction: "Arjun: Redis spike passed 15k load test! Scalability risk completely resolved!"
+                    },
+                    {
+                        opt: "C",
+                        text: "Pivot immediately to explore alternative NoSQL database options in spikes during current sprint.",
+                        effects: { budget: -40000, scheduleDelay: 1, risk: -10, morale: 3, client: 1, quality: 3 },
+                        score: { waterfall: 0, agile: 3, spiral: 2, incremental: 0 },
+                        consequence: "The team explores new technologies collaboratively, resolving bottlenecks through sprint spikes.",
+                        primaryModel: "Agile",
+                        setFlag: "databaseRiskAddressed",
+                        chatReaction: "Sarah: Sprint spike succeeded. Database throughput bottleneck cleared."
+                    },
+                    {
+                        opt: "D",
+                        text: "Cap current database scope to handle 8,000 users for Increment 1 and plan scaling for Increment 2.",
+                        effects: { budget: -15000, scheduleDelay: 0, risk: -5, morale: 1, client: 3, quality: 1 },
+                        score: { waterfall: 0, agile: 0, spiral: 1, incremental: 3 },
+                        consequence: "Release 1 stays on schedule for initial user groups while deferring high-concurrency optimization.",
+                        primaryModel: "Incremental",
+                        chatReaction: "Vikram: Increment 1 capped at 8k users. Scalability upgrade staged for Increment 2."
+                    }
+                ]
+            },
+            {
+                id: 5,
+                day: 2,
+                time: "04:30 PM",
+                phase: "Development",
+                channel: "calendar",
+                isMeeting: true,
+                sender: "Priya Nair",
+                senderRole: "Client Representative",
+                subject: "Client Feedback on Student Portal UI",
+                preview: "Client representative feedback: 'The software works, but this isn't what we expected.'",
+                description: `During today's end-of-module demonstration of the Student Services Portal, the University Dean remarked: "The technical functionality works as specified, but the user interface workflow is far too complex for non-technical administrative staff. This is not what we expected."
+
+The client is requesting redesign of the user interaction flow.`,
+                meetingParticipants: ["Priya Nair (Client)", "Meera Kapoor (UI/UX)", "Sarah Menon (Lead Dev)", "PM (You)"],
+                chatMessages: [
+                    { author: "Priya Nair", time: "04:25 PM", text: "The Dean reviewed the portal prototype. Functionality is fine, but UI usability is too confusing." },
+                    { author: "Meera Kapoor", time: "04:28 PM", text: "We followed the approved wireframe specs, but we can simplify the layout." }
+                ],
+                choices: [
+                    {
+                        opt: "A",
+                        text: "Remind client interface strictly adheres to approved design specification signed during requirements.",
+                        effects: { budget: 0, scheduleDelay: 0, risk: 3, morale: -1, client: -7, quality: 0 },
+                        score: { waterfall: 3, agile: 0, spiral: 0, incremental: 1 },
+                        consequence: "Project avoids scope inflation, but client dissatisfaction creates friction.",
+                        primaryModel: "Waterfall",
+                        setFlag: "clientTrustDamaged",
+                        chatReaction: "Priya: The Dean is dissatisfied that signed specs were prioritized over usability."
+                    },
+                    {
+                        opt: "B",
+                        text: "Gather detailed client UX feedback immediately and adjust backlog to incorporate UI refinement user stories.",
+                        effects: { budget: -25000, scheduleDelay: 1, risk: -2, morale: 2, client: 8, quality: 3 },
+                        score: { waterfall: 0, agile: 3, spiral: 0, incremental: 1 },
+                        consequence: "Iterative alignment with customer feedback significantly raises client satisfaction.",
+                        primaryModel: "Agile",
+                        chatReaction: "Meera: UX feedback integrated into Sprint 3 backlog. Client happy!"
+                    },
+                    {
+                        opt: "C",
+                        text: "Create 3 interactive wireframe prototypes of alternative UI workflows and conduct usability testing.",
+                        effects: { budget: -35000, scheduleDelay: 1, risk: -7, morale: 1, client: 6, quality: 4 },
+                        score: { waterfall: 0, agile: 1, spiral: 3, incremental: 0 },
+                        consequence: "Usability prototyping isolates root design disconnects before spending resources on code rewrites.",
+                        primaryModel: "Spiral",
+                        chatReaction: "Meera: Usability prototype testing completed with staff. UX risk cleared."
+                    },
+                    {
+                        opt: "D",
+                        text: "Retain current working portal for initial system launch while queuing requested UI redesign for Increment 2.",
+                        effects: { budget: -15000, scheduleDelay: 0, risk: -1, morale: 1, client: 4, quality: 2 },
+                        score: { waterfall: 0, agile: 1, spiral: 0, incremental: 3 },
+                        consequence: "Initial launch milestone remains protected while establishing a path for incremental improvements.",
+                        primaryModel: "Incremental",
+                        chatReaction: "Vikram: Increment 1 launch approved with UI overhaul queued for Increment 2."
+                    }
+                ]
+            },
+            {
+                id: 6,
+                day: 3,
+                time: "09:30 AM",
+                phase: "Development",
+                channel: "mail",
+                sender: "Vikram Das",
+                senderRole: "Product Owner",
+                subject: "Additional Feature Requests (Scope Control)",
+                preview: "Client department heads have submitted 5 additional feature requests...",
+                description: `Different university departments have submitted 5 additional feature requests (Grade Analytics, Hostel Booking, Library Integration, Alumni Tracking, Parent Notifications).
+
+The engineering team is feeling overwhelmed by creeping scope boundaries and lacks clarity on priorities.`,
+                chatMessages: [
+                    { author: "Vikram Das", time: "09:20 AM", text: "Department heads sent 5 new feature requests directly to engineering." },
+                    { author: "Sarah Menon", time: "09:25 AM", text: "We cannot build 5 major features without collapsing our timeline!" }
+                ],
+                choices: [
+                    {
+                        opt: "A",
+                        text: "Enforce formal change control procedures: require written impact analyses and steering committee approval.",
+                        effects: { budget: 20000, scheduleDelay: 0, risk: -4, morale: 1, client: -3, quality: 1 },
+                        score: { waterfall: 3, agile: 0, spiral: 1, incremental: 1 },
+                        consequence: "Formal governance halts scope creep effectively, though clients experience bureaucracy delay.",
+                        primaryModel: "Waterfall",
+                        setFlag: "scopeControlled",
+                        chatReaction: "Vikram: Formal CCB process invoked. Uncontrolled scope creep stopped."
+                    },
+                    {
+                        opt: "B",
+                        text: "Conduct product backlog grooming session with client to prioritize features and defer lower-value items.",
+                        effects: { budget: 10000, scheduleDelay: 0, risk: -2, morale: 3, client: 5, quality: 1 },
+                        score: { waterfall: 0, agile: 3, spiral: 0, incremental: 2 },
+                        consequence: "Collaborative backlog prioritization ensures highest-value features are built first.",
+                        primaryModel: "Agile",
+                        setFlag: "scopeControlled",
+                        chatReaction: "Vikram: Product backlog groomed. Top 2 items prioritized, rest deferred."
+                    },
+                    {
+                        opt: "C",
+                        text: "Perform technical feasibility and risk matrix analysis on all 5 requests before deciding.",
+                        effects: { budget: -25000, scheduleDelay: 1, risk: -8, morale: 0, client: 2, quality: 2 },
+                        score: { waterfall: 1, agile: 0, spiral: 3, incremental: 0 },
+                        consequence: "Systematic risk screening separates high-risk feature requests from safe enhancements.",
+                        primaryModel: "Spiral",
+                        chatReaction: "Sarah: Risk analysis matrix isolated safe features from high-risk bloat."
+                    },
+                    {
+                        opt: "D",
+                        text: "Group 5 requested features into future release increments (Release 2 and 3) based on dependency order.",
+                        effects: { budget: 10000, scheduleDelay: 0, risk: -3, morale: 2, client: 3, quality: 1 },
+                        score: { waterfall: 0, agile: 1, spiral: 0, incremental: 3 },
+                        consequence: "Staged release planning manages scope cleanly while reassuring stakeholders.",
+                        primaryModel: "Incremental",
+                        setFlag: "scopeControlled",
+                        chatReaction: "Vikram: Requests roadmap mapped across Release 1, 2, and 3."
+                    }
+                ]
+            },
+            {
+                id: 7,
+                day: 3,
+                time: "01:15 PM",
+                phase: "Development",
+                channel: "chat",
+                isMeeting: true,
+                sender: "Meera Kapoor",
+                senderRole: "UI/UX Designer",
+                subject: "Team Architectural Conflict in #development",
+                preview: "Senior developers are arguing intensely over Monolithic vs Microservices architecture...",
+                description: `An intense conflict has broken out between our Senior Systems Architect (advocating Microservices architecture) and Lead Developer (advocating Monolithic structure).
+
+Development meetings have turned unproductive and team momentum is stalling. Immediate leadership intervention is required.`,
+                meetingParticipants: ["Sarah Menon (Lead Dev)", "Arjun Rao (Backend)", "Meera Kapoor (UI/UX)", "PM (You)"],
+                chatMessages: [
+                    { author: "Sarah Menon", time: "01:05 PM", text: "Monolith is faster to ship for our 20-week deadline. Microservices adds network overhead!" },
+                    { author: "Arjun Rao", time: "01:10 PM", text: "Monolith will choke under future scaling! We MUST decouple into microservices now!" }
+                ],
+                choices: [
+                    {
+                        opt: "A",
+                        text: "Direct Technical Lead to make authoritative architectural decision and mandate all developers follow it.",
+                        effects: { budget: 0, scheduleDelay: 1, risk: 3, morale: -5, client: 0, quality: -1 },
+                        score: { waterfall: 2, agile: 0, spiral: 0, incremental: 1 },
+                        consequence: "Top-down decision ends debate quickly, but unaddressed team friction damages morale.",
+                        primaryModel: "Waterfall",
+                        setFlag: "teamOverworked",
+                        chatReaction: "Sarah: Directive issued. Developers compliant, but morale is low."
+                    },
+                    {
+                        opt: "B",
+                        text: "Facilitate structured team consensus workshop where both sides evaluate trade-offs against goals.",
+                        effects: { budget: -10000, scheduleDelay: 0, risk: -3, morale: 7, client: 1, quality: 2 },
+                        score: { waterfall: 0, agile: 3, spiral: 0, incremental: 1 },
+                        consequence: "Collaborative problem-solving resolves personal friction and aligns team commitment.",
+                        primaryModel: "Agile",
+                        chatReaction: "Arjun: Workshop was super productive! We aligned on a pragmatic modular structure."
+                    },
+                    {
+                        opt: "C",
+                        text: "Authorize quick 2-day proof-of-concept prototypes for both architectural patterns and evaluate performance.",
+                        effects: { budget: -40000, scheduleDelay: 1, risk: -12, morale: 2, client: 1, quality: 4 },
+                        score: { waterfall: 0, agile: 1, spiral: 3, incremental: 0 },
+                        consequence: "Empirical benchmarking replaces subjective debate with objective performance data.",
+                        primaryModel: "Spiral",
+                        chatReaction: "Sarah: POC benchmark numbers resolved the debate objectively."
+                    },
+                    {
+                        opt: "D",
+                        text: "Adopt modular monolith architecture for current release, allowing incremental transition to microservices.",
+                        effects: { budget: -10000, scheduleDelay: 0, risk: -4, morale: 2, client: 1, quality: 1 },
+                        score: { waterfall: 0, agile: 1, spiral: 1, incremental: 3 },
+                        consequence: "A pragmatic middle ground enables current progress while preserving future evolution.",
+                        primaryModel: "Incremental",
+                        chatReaction: "Arjun: Modular monolith strategy accepted. Incremental microservice path set."
+                    }
+                ]
+            },
+            {
+                id: 8,
+                day: 3,
+                time: "04:00 PM",
+                phase: "Testing",
+                channel: "project",
+                sender: "Sarah Menon",
+                senderRole: "Lead Developer",
+                subject: "Schedule Variance Alert (2 Weeks Behind)",
+                preview: "Mid-project progress tracking shows critical path activities are 2 weeks behind...",
+                description: `Project schedule tracking reveals that core integration deliverables are currently 2 weeks behind schedule due to unexpected API complexity.
+
+The final hard deadline (20 weeks total) remains fixed by the university board. We need a schedule recovery action plan.`,
+                chatMessages: [
+                    { author: "Sarah Menon", time: "03:50 PM", text: "Progress audit complete: Critical path integration is 2 weeks behind baseline schedule." },
+                    { author: "Rahul Shah", time: "03:55 PM", text: "Board deadline is immovable. What is our schedule recovery strategy?" }
+                ],
+                choices: [
+                    {
+                        opt: "A",
+                        text: "Enforce mandatory developer overtime and increase daily tracking meetings to enforce schedule recovery.",
+                        effects: { budget: -30000, scheduleDelay: 0, risk: 4, morale: -6, client: -1, quality: -2 },
+                        score: { waterfall: 3, agile: 0, spiral: 0, incremental: 1 },
+                        consequence: "Schedule recovery is attempted by brute force, but severe developer burnout and defect rates spike.",
+                        primaryModel: "Waterfall",
+                        setFlag: "teamOverworked",
+                        chatReaction: "Sarah: Overtime enforced. Team is fatigued and defect risk is spiking."
+                    },
+                    {
+                        opt: "B",
+                        text: "Negotiate with project stakeholders to reprioritize scope, dropping non-critical user stories.",
+                        effects: { budget: -10000, scheduleDelay: 0, risk: -2, morale: 3, client: 5, quality: 1 },
+                        score: { waterfall: 0, agile: 3, spiral: 0, incremental: 1 },
+                        consequence: "Scope flexibility protects deadline delivery and quality without overworking engineering team.",
+                        primaryModel: "Agile",
+                        chatReaction: "Vikram: Stakeholders agreed to scope reduction to hit hard launch date."
+                    },
+                    {
+                        opt: "C",
+                        text: "Conduct critical path root-cause risk analysis to identify process bottlenecks and optimize integration workflow.",
+                        effects: { budget: -20000, scheduleDelay: 1, risk: -9, morale: 1, client: 0, quality: 2 },
+                        score: { waterfall: 1, agile: 0, spiral: 3, incremental: 0 },
+                        consequence: "Process bottleneck analysis identifies systemic impediments, smoothing long-term velocity.",
+                        primaryModel: "Spiral",
+                        chatReaction: "Sarah: Critical path bottleneck cleared. Velocity stabilized."
+                    },
+                    {
+                        opt: "D",
+                        text: "Focus execution exclusively on delivering fully-tested core functional modules by deadline.",
+                        effects: { budget: -10000, scheduleDelay: 0, risk: -3, morale: 4, client: 4, quality: 1 },
+                        score: { waterfall: 0, agile: 1, spiral: 0, incremental: 3 },
+                        consequence: "Delivering working core system on time preserves customer trust even if secondary features are delayed.",
+                        primaryModel: "Incremental",
+                        chatReaction: "Arjun: Focus shifted to stable core increment. On track for delivery!"
+                    }
+                ]
+            },
+            {
+                id: 9,
+                day: 4,
+                time: "10:00 AM",
+                phase: "Testing",
+                channel: "mail",
+                isEscalation: true,
+                sender: "Ananya Iyer",
+                senderRole: "QA Lead",
+                subject: "SECURITY VULNERABILITY (CVSS 8.9 SQL Injection)",
+                preview: "Security audit discovered high-severity vulnerability (CVSS 8.9) in authentication API...",
+                description: `An automated penetration scan by QA has uncovered a high-severity SQL Injection and broken session vulnerability (CVSS 8.9) in our primary authentication endpoint.
+
+If deployed to production, student personal data and academic records could be exposed. A milestone delivery is scheduled next week.`,
+                chatMessages: [
+                    { author: "Ananya Iyer", time: "09:50 AM", text: "SECURITY ALERT: CVSS 8.9 SQL Injection found in auth controller." },
+                    { author: "Arjun Rao", time: "09:55 AM", text: "We need an immediate patch before code touches staging." }
+                ],
+                choices: [
+                    {
+                        opt: "A",
+                        text: "Halt feature development immediately and delay upcoming milestone delivery until security patches are verified.",
+                        effects: { budget: -40000, scheduleDelay: 1, risk: -15, morale: -2, client: -2, quality: 7 },
+                        score: { waterfall: 2, agile: 1, spiral: 2, incremental: 0 },
+                        consequence: "Milestone schedule slips slightly, but critical security flaw is completely remediated before production exposure.",
+                        primaryModel: "Waterfall",
+                        setFlag: "securityRiskMitigated",
+                        chatReaction: "Ananya: Milestone halted and patch applied. Zero vulnerabilities remaining."
+                    },
+                    {
+                        opt: "B",
+                        text: "Swarm the development team to fix vulnerability during current sprint, reprioritizing lower-priority tasks.",
+                        effects: { budget: -30000, scheduleDelay: 0, risk: -12, morale: 1, client: 2, quality: 5 },
+                        score: { waterfall: 0, agile: 3, spiral: 1, incremental: 1 },
+                        consequence: "Sprint agility allows immediate remediation while preserving delivery momentum.",
+                        primaryModel: "Agile",
+                        setFlag: "securityRiskMitigated",
+                        chatReaction: "Sarah: Sprint swarming successful. Vulnerability patched without delay!"
+                    },
+                    {
+                        opt: "C",
+                        text: "Execute formal RMMM plan: analyze breach impact, deploy security patch, and set up penetration monitoring.",
+                        effects: { budget: -25000, scheduleDelay: 1, risk: -14, morale: 1, client: 1, quality: 6 },
+                        score: { waterfall: 1, agile: 0, spiral: 3, incremental: 0 },
+                        consequence: "Rigorous RMMM execution systematically addresses vulnerability root causes and establishes threat monitoring.",
+                        primaryModel: "Spiral",
+                        setFlag: "securityRiskMitigated",
+                        chatReaction: "Ananya: RMMM plan executed. Penetration monitoring active."
+                    },
+                    {
+                        opt: "D",
+                        text: "Disable vulnerable online authentication module in upcoming release, releasing offline modules first while patching.",
+                        effects: { budget: -15000, scheduleDelay: 0, risk: -10, morale: 3, client: 4, quality: 4 },
+                        score: { waterfall: 0, agile: 1, spiral: 1, incremental: 3 },
+                        consequence: "Incremental release isolation allows safe delivery of unaffected modules while security fixes undergo validation.",
+                        primaryModel: "Incremental",
+                        setFlag: "securityRiskMitigated",
+                        chatReaction: "Vikram: Unaffected modules isolated for Release 1. Auth module queued for 1.1 patch."
+                    }
+                ]
+            },
+            {
+                id: 10,
+                day: 4,
+                time: "02:30 PM",
+                phase: "Testing",
+                channel: "mail",
+                sender: "Ananya Iyer",
+                senderRole: "QA Lead",
+                subject: "Pre-Release QA Defect Density Audit",
+                preview: "QA regression testing reports 42 open defects (8 critical, 14 major)...",
+                description: `Pre-release QA regression testing reports 42 open defects across the student portal (including 8 Critical block-level bugs and 14 Major UI state bugs).
+
+The planned launch date is approaching fast. We need a quality control release decision.`,
+                chatMessages: [
+                    { author: "Ananya Iyer", time: "02:20 PM", text: "QA Audit Report: 42 open defects logged (8 Critical, 14 Major)." },
+                    { author: "Sarah Menon", time: "02:25 PM", text: "If we ship with 8 Critical bugs, student data entry will fail." }
+                ],
+                choices: [
+                    {
+                        opt: "A",
+                        text: "Postpone production release unconditionally until 100% of critical and major defects are resolved.",
+                        effects: { budget: -50000, scheduleDelay: 2, risk: -12, morale: -5, client: -3, quality: 10 },
+                        score: { waterfall: 3, agile: 0, spiral: 1, incremental: 0 },
+                        consequence: "Release is delayed by 2 weeks, but production software quality and stability reach strict standards.",
+                        primaryModel: "Waterfall",
+                        chatReaction: "Ananya: Release postponed until 100% pass rate achieved."
+                    },
+                    {
+                        opt: "B",
+                        text: "Triage defects with stakeholders: fix Critical block-level bugs immediately and defer minor cosmetic bugs.",
+                        effects: { budget: -35000, scheduleDelay: 1, risk: -8, morale: 1, client: 3, quality: 8 },
+                        score: { waterfall: 0, agile: 3, spiral: 1, incremental: 1 },
+                        consequence: "Pragmatic defect triage ensures core system stability without unnecessary launch delay.",
+                        primaryModel: "Agile",
+                        chatReaction: "Sarah: Critical bugs patched! Cosmetic items triaged for Sprint 5."
+                    },
+                    {
+                        opt: "C",
+                        text: "Perform root-cause defect analysis to identify error-prone modules and conduct targeted regression risk testing.",
+                        effects: { budget: -30000, scheduleDelay: 1, risk: -10, morale: 0, client: 1, quality: 6 },
+                        score: { waterfall: 0, agile: 0, spiral: 3, incremental: 0 },
+                        consequence: "Root-cause analysis prevents bug recurrence and strengthens overall system robustness.",
+                        primaryModel: "Spiral",
+                        chatReaction: "Ananya: Root-cause analysis isolated defect clusters in auth API."
+                    },
+                    {
+                        opt: "D",
+                        text: "Release only verified zero-defect stable modules in Increment 1, withholding bug-affected modules for Increment 2.",
+                        effects: { budget: -20000, scheduleDelay: 0, risk: -5, morale: 4, client: 4, quality: 5 },
+                        score: { waterfall: 0, agile: 1, spiral: 0, incremental: 3 },
+                        consequence: "Users receive rock-solid core functionality on schedule while problematic features undergo stabilization.",
+                        primaryModel: "Incremental",
+                        chatReaction: "Vikram: Stable modules approved for launch today!"
+                    }
+                ]
+            },
+            {
+                id: 11,
+                day: 5,
+                time: "10:30 AM",
+                phase: "Delivery",
+                channel: "mail",
+                isMeeting: true,
+                sender: "Priya Nair",
+                senderRole: "Client Representative",
+                subject: "Late Business Requirement (Payment Gateway)",
+                preview: "Client executive board insists on incorporating new Online Fee Payment gateway...",
+                description: `With only 3 weeks remaining before final project completion, the University Financial Registrar insists: "Without an online Payment Gateway integration, the student platform cannot fulfill its primary registration mandate. This requirement must be added now."
+
+Engineering reports this requires unexpected third-party banking integration.`,
+                meetingParticipants: ["Priya Nair (Client)", "Rahul Shah (Finance)", "Vikram Das (PO)", "PM (You)"],
+                chatMessages: [
+                    { author: "Priya Nair", time: "10:20 AM", text: "The Registrar mandated that Payment Gateway integration MUST be in Release 1." },
+                    { author: "Arjun Rao", time: "10:25 AM", text: "With 3 weeks left, building banking integration from scratch is very high risk." }
+                ],
+                choices: [
+                    {
+                        opt: "A",
+                        text: "Reject late requirement change outright. Scope freeze was finalized and late changes violate approved governance.",
+                        effects: { budget: 0, scheduleDelay: 0, risk: 3, morale: 1, client: -10, quality: 0 },
+                        score: { waterfall: 3, agile: 0, spiral: 0, incremental: 1 },
+                        consequence: "Schedule and scope baselines are preserved, but client satisfaction suffers severe damage.",
+                        primaryModel: "Waterfall",
+                        setFlag: "clientTrustDamaged",
+                        chatReaction: "Priya: Change rejected under contract scope freeze rules."
+                    },
+                    {
+                        opt: "B",
+                        text: "Work with client to immediately remove lower-priority reporting modules from final sprint for payment gateway.",
+                        effects: { budget: -30000, scheduleDelay: 1, risk: 2, morale: -1, client: 7, quality: 1 },
+                        score: { waterfall: 0, agile: 3, spiral: 0, incremental: 2 },
+                        consequence: "Agile scope swapping delivers vital payment gateway, satisfying critical business needs.",
+                        primaryModel: "Agile",
+                        chatReaction: "Vikram: Reporting swapped for Payment Gateway in final sprint!"
+                    },
+                    {
+                        opt: "C",
+                        text: "Conduct emergency technical risk & security assessment of third-party payment gateway before deciding.",
+                        effects: { budget: -25000, scheduleDelay: 1, risk: -7, morale: 0, client: 3, quality: 2 },
+                        score: { waterfall: 0, agile: 1, spiral: 3, incremental: 0 },
+                        consequence: "Evaluating financial security risks prevents hasty integration of vulnerable third-party payment APIs.",
+                        primaryModel: "Spiral",
+                        chatReaction: "Sarah: API security assessment completed. Integration risk managed."
+                    },
+                    {
+                        opt: "D",
+                        text: "Deliver current stable system as Release 1.0 on schedule and release Payment Gateway as fast-follow Release 1.1 patch.",
+                        effects: { budget: -10000, scheduleDelay: 0, risk: -2, morale: 2, client: 2, quality: 1 },
+                        score: { waterfall: 0, agile: 1, spiral: 0, incremental: 3 },
+                        consequence: "Protects initial launch date while guaranteeing structured delivery of payment module shortly after.",
+                        primaryModel: "Incremental",
+                        chatReaction: "Vikram: Release 1.0 launches on time; Payment Gateway scheduled for 1.1!"
+                    }
+                ]
+            },
+            {
+                id: 12,
+                day: 5,
+                time: "03:00 PM",
+                phase: "Delivery",
+                channel: "project",
+                isMeeting: true,
+                sender: "Vikram Das",
+                senderRole: "Product Owner",
+                subject: "Final Release Prioritization Strategy",
+                preview: "Final delivery decision required: 80% of system complete & stable, 20% secondary features pending...",
+                description: `We have reached the final delivery decision point.
+
+Current Project Handover Status:
+• 80% of system modules are fully developed, integrated, and verified stable.
+• 20% of secondary features (Advanced Analytics, Dark Theme) remain incomplete.
+• The University Board expects an operational system handover today.
+
+What is your final managerial release strategy?`,
+                meetingParticipants: ["Priya Nair (Client)", "Sarah Menon (Lead Dev)", "Ananya Iyer (QA)", "Vikram Das (PO)", "PM (You)"],
+                chatMessages: [
+                    { author: "Vikram Das", time: "02:50 PM", text: "Board meeting is in 1 hour. Core system is 80% complete and fully verified." },
+                    { author: "Sarah Menon", time: "02:55 PM", text: "We need your final handover call PM!" }
+                ],
+                choices: [
+                    {
+                        opt: "A",
+                        text: "Delay final release by 3 weeks until 100% of planned features are fully completed and verified per master plan.",
+                        effects: { budget: -60000, scheduleDelay: 3, risk: -10, morale: -6, client: -4, quality: 8 },
+                        score: { waterfall: 3, agile: 0, spiral: 1, incremental: 0 },
+                        consequence: "Delivers 100% full scope as specified in initial contract, but misses the board's strict handover deadline.",
+                        primaryModel: "Waterfall",
+                        chatReaction: "Sarah: Master plan enforced for 100% scope completion."
+                    },
+                    {
+                        opt: "B",
+                        text: "Re-align final release criteria with client: deploy 80% complete system today and collaboratively refine pending items.",
+                        effects: { budget: -25000, scheduleDelay: 1, risk: -5, morale: 2, client: 7, quality: 3 },
+                        score: { waterfall: 0, agile: 3, spiral: 0, incremental: 1 },
+                        consequence: "Client gains immediate operational value while maintaining continuous collaborative feedback.",
+                        primaryModel: "Agile",
+                        chatReaction: "Priya: Operational release deployed today! Feedback loop open."
+                    },
+                    {
+                        opt: "C",
+                        text: "Perform final operational deployment risk analysis to verify system safety before authorizing release.",
+                        effects: { budget: -20000, scheduleDelay: 1, risk: -9, morale: 1, client: 2, quality: 5 },
+                        score: { waterfall: 0, agile: 0, spiral: 3, incremental: 1 },
+                        consequence: "Operational risk screening ensures zero critical failures occur during live campus rollout.",
+                        primaryModel: "Spiral",
+                        chatReaction: "Ananya: Operational deployment risk screening verified safe."
+                    },
+                    {
+                        opt: "D",
+                        text: "Formally deliver 80% stable core as Increment 1 today, and schedule remaining 20% secondary features for Increment 2.",
+                        effects: { budget: -10000, scheduleDelay: 0, risk: -4, morale: 5, client: 6, quality: 4 },
+                        score: { waterfall: 0, agile: 1, spiral: 0, incremental: 3 },
+                        consequence: "Classic incremental success: on-time handover of high-value core software with progressive enhancement planned.",
+                        primaryModel: "Incremental",
+                        chatReaction: "Vikram: Increment 1 handed over successfully today!"
+                    }
+                ]
+            }
+        ];
+
+        /* --- SIMULATOR ENGINE FUNCTIONS --- */
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function startSimulation() {
+            let btn = document.getElementById('startBtn');
+            btn.innerHTML = `<span>Loading workspace...</span>`;
+            btn.style.opacity = '0.8';
+
+            setTimeout(() => {
+                document.getElementById('landingScreen').classList.remove('active');
+                document.getElementById('simulatorScreen').classList.add('active');
+                loadScenario(0);
+            }, 350);
+        }
+
+        function restartSimulation() {
+            gameState = {
+                day: 1,
+                time: "08:57 AM",
+                currentScenario: 0,
+                activeApp: "mail",
+                activeChatChannel: "development",
+                budget: 1000000,
+                deadlineWeeks: 20,
+                weeksDelayed: 0,
+                risk: 20,
+                morale: 80,
+                client: 80,
+                quality: 80,
+                stakeholders: { clientTrust: 80, teamConfidence: 80, financeConfidence: 80 },
+                flags: { databaseRiskAddressed: false, securityRiskMitigated: false, developerKnowledgeShared: false, scopeControlled: false, clientTrustDamaged: false, teamOverworked: false, technicalDebtHigh: false, requirementsUnstable: false, budgetBufferLow: false },
+                tasks: [
+                    { id: 't1', text: 'Review MFA authentication request', channel: 'mail', scenarioId: 1, done: false },
+                    { id: 't2', text: 'Finance check-in with Rahul Shah', channel: 'calendar', scenarioId: 2, done: false },
+                    { id: 't3', text: 'Senior developer staffing review', channel: 'mail', scenarioId: 3, done: false },
+                    { id: 't4', text: 'Investigate DB concurrency deadlocks', channel: 'chat', scenarioId: 4, done: false }
+                ],
+                activeInterruption: null,
+                interruptionHandled: false,
+                chats: {
+                    general: [{ author: "Vikram Das", time: "08:50 AM", text: "Welcome to CampusConnect Sprint 4. Let's make sure core deliverables stay on track." }],
+                    development: [{ author: "Sarah Menon", time: "08:55 AM", text: "Team, standup complete. Please check inbox for latest client updates." }],
+                    design: [{ author: "Meera Kapoor", time: "08:52 AM", text: "UI design wireframes for Student Services Portal ready for feedback." }],
+                    qa: [{ author: "Ananya Iyer", time: "08:54 AM", text: "Automated test suite configured. Staging build green." }]
+                },
+                scores: { waterfall: 0, agile: 0, spiral: 0, incremental: 0 },
+                decisions: [],
+                notifications: [
+                    { id: 1, type: "mail", title: "New Email: Priya Nair", text: "Re: Authentication & Service Request", time: "09:15 AM", read: false }
+                ],
+                hasAnsweredCurrent: false,
+                selectedRiskDetail: null,
+                isClosureSequence: false
+            };
+
+            document.getElementById('startBtn').innerHTML = `<span>Start Workday</span>`;
+            document.getElementById('resultsScreen').classList.remove('active');
+            document.getElementById('closureScreen').classList.remove('active');
+            document.getElementById('landingScreen').classList.add('active');
+        }
+
+        function updateMetricsDisplay() {
+            let sc = scenarios[gameState.currentScenario] || scenarios[11];
+            let schedText = gameState.weeksDelayed === 0 ? "On track" : `+${gameState.weeksDelayed} wk delay`;
+
+            document.getElementById('timeStatusPill').innerText = `Day ${sc.day} · ${getDayName(sc.day)} · ${sc.time}`;
+            document.getElementById('systemTimeDisplay').innerText = sc.time;
+            document.getElementById('scenarioProgressBadge').innerText = `${sc.time} · ${getDayName(sc.day)}`;
+
+            // Sidebar Metrics
+            document.getElementById('sideBudget').innerText = '₹' + gameState.budget.toLocaleString('en-IN');
+            document.getElementById('sideSchedule').innerText = schedText;
+            document.getElementById('sideRisk').innerText = gameState.risk + '%';
+            document.getElementById('sideQuality').innerText = gameState.quality + '%';
+
+            // Update Notifications Badge
+            let unreadCount = gameState.notifications.filter(n => !n.read).length;
+            let notifBadge = document.getElementById('notifBadge');
+            if (unreadCount > 0) {
+                notifBadge.style.display = 'flex';
+                notifBadge.innerText = unreadCount;
+            } else {
+                notifBadge.style.display = 'none';
+            }
+
+            // Update Task Badge
+            let pendingTasks = gameState.tasks.filter(t => !t.done).length;
+            document.getElementById('taskBadge').innerText = pendingTasks;
+        }
+
+        function getDayName(d) {
+            const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+            return days[d - 1] || "Friday";
+        }
+
+        function switchApp(appName) {
+            gameState.activeApp = appName;
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            let navEl = document.getElementById(`nav-${appName}`);
+            if (navEl) navEl.classList.add('active');
+
+            renderAppBody();
+        }
+
+        function switchChatChannel(channelName) {
+            gameState.activeChatChannel = channelName;
+            renderAppBody();
+        }
+
+        function loadScenario(index) {
+            if (index >= scenarios.length) {
+                startClosureSequence();
+                return;
+            }
+            gameState.currentScenario = index;
+            gameState.hasAnsweredCurrent = false;
+
+            let sc = scenarios[index];
+
+            // Mark matching task done
+            let matchingTask = gameState.tasks.find(t => t.scenarioId === sc.id);
+            if (matchingTask) matchingTask.done = true;
+
+            // Check for Minor Interruption after scenario
+            let interp = minorInterruptions.find(m => m.afterScenario === index);
+            if (interp && !gameState.interruptionHandled) {
+                gameState.activeInterruption = interp;
+            }
+
+            if (!gameState.notifications.some(n => n.id === sc.id)) {
+                gameState.notifications.unshift({
+                    id: sc.id,
+                    type: sc.channel,
+                    title: `Scenario ${sc.id}: ${sc.sender}`,
+                    text: sc.subject,
+                    time: sc.time,
+                    read: false
+                });
+            }
+
+            updateMetricsDisplay();
+            switchApp(sc.channel || "mail");
+        }
+
+        function renderAppBody() {
+            let bodyEl = document.getElementById('contentBody');
+            let titleEl = document.getElementById('contentTitle');
+            let sc = scenarios[gameState.currentScenario];
+
+            if (gameState.activeApp === "mail") {
+                titleEl.innerText = "Inbox";
+                renderMailApp(bodyEl, sc);
+            } else if (gameState.activeApp === "chat") {
+                titleEl.innerText = `Team Chat (#${gameState.activeChatChannel})`;
+                renderChatApp(bodyEl, sc);
+            } else if (gameState.activeApp === "project") {
+                titleEl.innerText = "Project Overview & Risk Register";
+                renderProjectApp(bodyEl, sc);
+            } else if (gameState.activeApp === "calendar") {
+                titleEl.innerText = "Calendar";
+                renderCalendarApp(bodyEl, sc);
+            } else if (gameState.activeApp === "tasks") {
+                titleEl.innerText = "Work Queue";
+                renderTasksApp(bodyEl);
+            } else if (gameState.activeApp === "decisions") {
+                titleEl.innerText = "Decision Log";
+                renderDecisionsApp(bodyEl);
+            } else if (gameState.activeApp === "files") {
+                titleEl.innerText = "Workspace Files";
+                renderFilesApp(bodyEl, sc);
+            }
+        }
+
+        /* --- TIMELINE RENDERER --- */
+        function renderTimeline(currentPhase) {
+            let phases = ["Requirements", "Development", "Testing", "Delivery"];
+            let currentIdx = phases.indexOf(currentPhase);
+            if (currentIdx === -1) currentIdx = 1;
+
+            let projWeek = 20 + gameState.weeksDelayed;
+            let varText = gameState.weeksDelayed > 0 ? `+${gameState.weeksDelayed} wk delay (Projected W${projWeek})` : 'On track';
+
+            return `
+        <div class="timeline-container">
+          <div class="timeline-header">
+            <span>PROJECT TIMELINE PHASE: ${currentPhase.toUpperCase()}</span>
+            <span>DELIVERY SCHEDULE: ${varText.toUpperCase()}</span>
+          </div>
+          <div class="timeline-track">
+            <div class="timeline-connector"></div>
+            <div class="timeline-phase ${currentIdx > 0 ? 'completed' : (currentIdx === 0 ? 'active' : '')}">
+              <div class="timeline-dot"></div>
+              <span>W1 Requirements</span>
+            </div>
+            <div class="timeline-phase ${currentIdx > 1 ? 'completed' : (currentIdx === 1 ? 'active' : '')}">
+              <div class="timeline-dot"></div>
+              <span>W5 Development</span>
+            </div>
+            <div class="timeline-phase ${currentIdx > 2 ? 'completed' : (currentIdx === 2 ? 'active' : '')}">
+              <div class="timeline-dot"></div>
+              <span>W10 Testing</span>
+            </div>
+            <div class="timeline-phase ${currentIdx === 3 ? 'active' : ''}">
+              <div class="timeline-dot"></div>
+              <span>W20 Handover</span>
+            </div>
+          </div>
+        </div>
+      `;
+        }
+
+        /* --- DECISION BLOCK RENDERER --- */
+        function renderDecisionPanel(sc, currentApp) {
+            if (!gameState.hasAnsweredCurrent) {
+                if (currentApp && currentApp !== sc.channel) {
+                    let channelName = sc.channel.toUpperCase();
+                    if (sc.channel === 'mail') channelName = 'MAIL INBOX';
+                    else if (sc.channel === 'chat') channelName = 'TEAM CHAT';
+                    else if (sc.channel === 'project') channelName = 'PROJECT OVERVIEW';
+                    else if (sc.channel === 'calendar') channelName = 'CALENDAR';
+
+                    return `
+            <div style="background:var(--bg); border:1px solid var(--border); border-radius:5px; padding:0.75rem 1rem; margin-top:1.25rem; display:flex; justify-content:space-between; align-items:center;">
+              <div style="font-size:13px; color:var(--text-secondary);">
+                Active decision required in <strong>${channelName}</strong> — <em>${sc.subject}</em>
+              </div>
+              <button class="btn btn-secondary" style="padding:0.35rem 0.85rem; font-size:12px;" onclick="switchApp('${sc.channel}')">
+                Open ${channelName}
+              </button>
+            </div>
+          `;
+                }
+
+                if (sc.isMeeting) {
+                    return `
+            <div class="meeting-card">
+              <div class="meeting-header">
+                <div class="meeting-title">STAKEHOLDER MEETING: ${sc.subject.toUpperCase()}</div>
+                <span style="font-size:11px; color:var(--text-muted);">${sc.time}</span>
+              </div>
+              <div style="font-size:12px; color:var(--text-muted); margin-bottom:0.75rem;">
+                Participants: ${sc.meetingParticipants.join(", ")}
+              </div>
+              <div style="font-size:13.5px; color:var(--text-secondary); margin-bottom:1rem;">
+                ${sc.description}
+              </div>
+              <div class="decision-panel-title" style="margin-bottom:0.6rem;">YOUR MANAGERIAL DECISION</div>
+              <div class="options-grid">
+                ${sc.choices.map((c, i) => `
+                  <button class="option-button" onclick="selectChoice(${i})">
+                    <span class="option-tag">${c.opt}</span>
+                    <span>${c.text}</span>
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+          `;
+                }
+
+                return `
+          <div class="decision-panel">
+            <div class="decision-panel-header">
+              <div class="decision-panel-title">
+                MANAGERIAL RESPONSE REQUIRED (SCENARIO ${sc.id} OF 12)
+              </div>
+              <span style="font-size:11px; color:var(--text-muted);">${sc.channel.toUpperCase()}</span>
+            </div>
+            <div class="options-grid">
+              ${sc.choices.map((c, i) => `
+                <button class="option-button" onclick="selectChoice(${i})">
+                  <span class="option-tag">${c.opt}</span>
+                  <span>${c.text}</span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+            } else {
+                let lastDec = gameState.decisions[gameState.decisions.length - 1];
+
+                return `
+          <div class="consequence-box active">
+            <div class="consequence-box-title">Decision recorded</div>
+            <div class="consequence-box-desc">${lastDec.consequence}</div>
+            <div class="delta-pills">
+              ${renderDeltaPills(lastDec.effects)}
+            </div>
+            <button class="btn btn-primary" onclick="nextScenario()" style="margin-top:0.25rem;">
+              <span>Proceed to ${gameState.currentScenario + 2 <= 12 ? 'Scenario ' + (gameState.currentScenario + 2) : 'Final Handover'} &rarr;</span>
+            </button>
+          </div>
+        `;
+            }
+        }
+
+        /* --- APP RENDERERS --- */
+        function showMinorEmail(index) {
+            const mail = minorEmails[index];
+            if (!mail) return;
+            gameState.activeApp = "mail";
+
+            const body = document.getElementById("appBody");
+            body.innerHTML = `
+        <div>
+          ${renderTimeline((scenarios[gameState.currentScenario] || {}).phase || "Development")}
+          <div class="mail-container">
+            <div class="inbox-list">
+              <div style="padding:0 0.5rem 0.5rem;font-size:12px;font-weight:600;color:var(--text-muted);">INBOX</div>
+              ${scenarios.map((s, idx) => {
+                const isCompleted = idx < gameState.currentScenario;
+                const isActive = idx === gameState.currentScenario;
+                const isLocked = idx > gameState.currentScenario;
+                const rowClass = isActive ? 'active' : (isLocked ? 'locked' : '');
+                const clickAttr = !isLocked ? `onclick="loadScenario(${idx})"` : '';
+                return `<div class="inbox-row ${rowClass}" ${clickAttr}>
+                  <div class="inbox-row-header"><span>${isCompleted ? '✓ ' : ''}${s.sender}</span><span>Day ${s.day}</span></div>
+                  <div class="inbox-row-subject">${s.subject}</div>
+                  <div class="inbox-row-snippet">${isLocked ? 'Arrives Day ' + s.day : s.preview}</div>
+                </div>`;
+            }).join('')}
+              <div style="padding:12px 0.5rem 0.5rem;font-size:10px;font-weight:600;color:var(--text-muted);border-top:1px solid var(--border);">OTHER MAIL</div>
+              ${minorEmails.map((m, i) => `
+                <div class="inbox-row ${i === index ? 'active' : ''}" onclick="showMinorEmail(${i})">
+                  <div class="inbox-row-header"><span>${m.sender}</span><span>${m.time}</span></div>
+                  <div class="inbox-row-subject">${m.title}</div>
+                  <div class="inbox-row-snippet">${m.preview}</div>
+                </div>`).join('')}
+            </div>
+            <div class="email-detail">
+              <div class="email-subject-heading">${mail.title}</div>
+              <div class="email-sender-card">
+                <div class="sender-avatar">${mail.sender.charAt(0)}</div>
+                <div><span class="sender-name">${mail.sender}</span><span style="color:var(--text-muted);"> &lt;${mail.role}&gt;</span><div class="sender-meta">To: Project Manager · ${mail.time}</div></div>
+              </div>
+              <div class="email-text-body">${mail.body}</div>
+              <div style="margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border);font-size:11px;color:var(--text-muted);">FYI · No action required</div>
+            </div>
+          </div>
+        </div>`;
+        }
+
+        function renderMailApp(container, sc) {
+            let html = `
+        <div>
+          ${renderTimeline(sc.phase || "Development")}
+
+          <div class="mail-container">
+            <div class="inbox-list">
+              <div class="inbox-list-heading">
+                <span>INBOX</span>
+                <span>${Math.max(0, scenarios.length - gameState.currentScenario)} pending</span>
+              </div>
+
+              ${scenarios.map((s, idx) => {
+                const isCompleted = idx < gameState.currentScenario;
+                const isActive = idx === gameState.currentScenario;
+                const isLocked = idx > gameState.currentScenario;
+                const rowClass = isActive ? 'active' : (isLocked ? 'locked' : '');
+                const clickAttr = !isLocked ? `onclick="loadScenario(${idx})"` : '';
+
+                return `
+                  <div class="inbox-row ${rowClass}" ${clickAttr}>
+                    <div class="inbox-row-header">
+                      <span class="inbox-sender">${isCompleted ? '<span class="mail-check">✓</span>' : ''}${s.sender}</span>
+                      <span class="inbox-day">${isLocked ? 'Day ' + s.day : s.time}</span>
+                    </div>
+                    <div class="inbox-row-subject">${s.subject}</div>
+                    <div class="inbox-row-snippet">${isLocked ? 'Arrives Day ' + s.day : s.preview}</div>
+                  </div>
+                `;
+            }).join('')}
+
+              <div class="inbox-section-label">OTHER MAIL</div>
+
+              ${minorEmails.map((m, i) => `
+                <div class="inbox-row minor-mail-row" onclick="showMinorEmail(${i})">
+                  <div class="inbox-row-header">
+                    <span class="inbox-sender">${m.sender}</span>
+                    <span class="inbox-day">${m.time}</span>
+                  </div>
+                  <div class="inbox-row-subject">${m.title}</div>
+                  <div class="inbox-row-snippet">${m.preview}</div>
+                </div>
+              `).join('')}
+            </div>
+
+            <div class="email-detail">
+              <div class="email-subject-heading">${sc.subject}</div>
+
+              <div class="email-sender-card">
+                <div class="sender-avatar">${sc.sender.charAt(0)}</div>
+                <div>
+                  <span class="sender-name">${sc.sender}</span>
+                  <span style="color:var(--text-muted);"> &lt;${sc.senderRole}&gt;</span>
+                  <div class="sender-meta">To: Project Manager · ${sc.time}</div>
+                </div>
+              </div>
+
+              <div class="email-text-body">${sc.description}</div>
+
+              ${renderDecisionPanel(sc, "mail")}
+            </div>
+          </div>
+        </div>
+      `;
+
+            container.innerHTML = html;
+        }
+
+        function renderDeltaPills(eff) {
+            let pills = [];
+            if (eff.budget !== 0) pills.push(`<span class="delta-pill">Cost: ${eff.budget > 0 ? '-' : '+'}₹${Math.abs(eff.budget).toLocaleString('en-IN')}</span>`);
+            if (eff.scheduleDelay !== undefined && eff.scheduleDelay !== 0) pills.push(`<span class="delta-pill">Schedule: ${eff.scheduleDelay > 0 ? '+' : ''}${eff.scheduleDelay} wk delay</span>`);
+            if (eff.risk !== 0) pills.push(`<span class="delta-pill">Risk: ${eff.risk > 0 ? '+' : ''}${eff.risk}%</span>`);
+            if (eff.morale !== 0) pills.push(`<span class="delta-pill">Morale: ${eff.morale > 0 ? '+' : ''}${eff.morale}%</span>`);
+            if (eff.client !== 0) pills.push(`<span class="delta-pill">Client: ${eff.client > 0 ? '+' : ''}${eff.client}%</span>`);
+            if (eff.quality !== 0) pills.push(`<span class="delta-pill">Quality: ${eff.quality > 0 ? '+' : ''}${eff.quality}%</span>`);
+            return pills.join(' ');
+        }
+
+        function renderChatApp(container, sc) {
+            let channelList = ["general", "development", "design", "qa"];
+            let activeChannel = gameState.activeChatChannel || "development";
+            let channelMsgs = (gameState.chats[activeChannel] || []).concat(minorChatMessages.filter(m => m.channel === activeChannel));
+
+            let lastDec = gameState.decisions.find(d => d.scenarioId === sc.id);
+
+            let html = `
+        <div>
+          ${renderTimeline(sc.phase || "Development")}
+
+          <div class="chat-wrapper">
+            <div class="chat-channels">
+              ${channelList.map(ch => `
+                <div class="channel-link ${ch === activeChannel ? 'active' : ''}" onclick="switchChatChannel('${ch}')">
+                  # ${ch}
+                </div>
+              `).join('')}
+            </div>
+
+            <div class="chat-feed">
+              ${sc.chatMessages && activeChannel === 'development' ? sc.chatMessages.map(m => `
+                <div class="chat-bubble">
+                  <div class="sender-avatar">${m.author.charAt(0)}</div>
+                  <div>
+                    <div class="chat-author">${m.author} <span class="chat-time">${m.time}</span></div>
+                    <div class="chat-text">${m.text}</div>
+                  </div>
+                </div>
+              `).join('') : ''}
+
+              ${channelMsgs.map(m => `
+                <div class="chat-bubble">
+                  <div class="sender-avatar">${m.author.charAt(0)}</div>
+                  <div>
+                    <div class="chat-author">${m.author} <span class="chat-time">${m.time}</span></div>
+                    <div class="chat-text">${m.text}</div>
+                  </div>
+                </div>
+              `).join('')}
+
+              ${lastDec && lastDec.chatReaction && activeChannel === 'development' ? `
+                <div class="chat-bubble" style="border:1px solid var(--border); background:var(--surface);">
+                  <div class="sender-avatar" style="background:var(--text); color:#fff;">PM</div>
+                  <div>
+                    <div class="chat-author">Team Update <span class="chat-time">Just Now</span></div>
+                    <div class="chat-text">${lastDec.chatReaction}</div>
+                  </div>
+                </div>
+              ` : ''}
+
+              ${gameState.activeInterruption ? `
+                <div style="background:var(--bg); border:1px solid var(--warning); border-radius:5px; padding:0.85rem; margin-top:0.5rem;">
+                  <div style="font-size:11px; font-weight:600; color:var(--warning); text-transform:uppercase;">WORKDAY INTERRUPTION · ${gameState.activeInterruption.time}</div>
+                  <div style="font-size:13px; font-weight:600; color:var(--text); margin:0.2rem 0;">${gameState.activeInterruption.sender}: "${gameState.activeInterruption.text}"</div>
+                  <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.5rem;">
+                    ${gameState.activeInterruption.choices.map((c, i) => `
+                      <button class="option-button" onclick="handleInterruptionChoice(${i})">
+                        <span>${c.text}</span>
+                      </button>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+
+              ${renderDecisionPanel(sc, "chat")}
+            </div>
+          </div>
+        </div>
+      `;
+            container.innerHTML = html;
+        }
+
+        function handleInterruptionChoice(idx) {
+            if (!gameState.activeInterruption) return;
+            let choice = gameState.activeInterruption.choices[idx];
+            if (choice.effect) {
+                if (choice.effect.budget) gameState.budget += choice.effect.budget;
+                if (choice.effect.risk) gameState.risk = Math.max(0, Math.min(100, gameState.risk + choice.effect.risk));
+                if (choice.effect.client) gameState.client = Math.max(0, Math.min(100, gameState.client + choice.effect.client));
+                if (choice.effect.quality) gameState.quality = Math.max(0, Math.min(100, gameState.quality + choice.effect.quality));
+            }
+            gameState.activeInterruption = null;
+            gameState.interruptionHandled = true;
+            updateMetricsDisplay();
+            renderAppBody();
+        }
+
+        function renderProjectApp(container, sc) {
+            let schedText = gameState.weeksDelayed === 0 ? "On track" : `+${gameState.weeksDelayed} wks delay`;
+
+            let html = `
+        <div>
+          ${renderTimeline(sc.phase || "Development")}
+
+          <div style="margin-bottom:1.25rem;">
+            ${renderDecisionPanel(sc, "project")}
+          </div>
+
+          <h3 style="margin-bottom:0.75rem; color:var(--text); font-size:13.5px; font-weight:600;">Project Pulse Overview</h3>
+          <div class="dash-metrics-grid">
+            <div class="dash-card">
+              <div class="dash-card-label">Remaining Budget</div>
+              <div class="dash-card-value">₹${gameState.budget.toLocaleString('en-IN')}</div>
+            </div>
+            <div class="dash-card">
+              <div class="dash-card-label">Schedule Status</div>
+              <div class="dash-card-value">${schedText}</div>
+            </div>
+            <div class="dash-card">
+              <div class="dash-card-label">Residual Risk</div>
+              <div class="dash-card-value">${gameState.risk}%</div>
+            </div>
+            <div class="dash-card">
+              <div class="dash-card-label">Team Morale</div>
+              <div class="dash-card-value">${gameState.morale}%</div>
+            </div>
+            <div class="dash-card">
+              <div class="dash-card-label">Client Satisfaction</div>
+              <div class="dash-card-value">${gameState.client}%</div>
+            </div>
+            <div class="dash-card">
+              <div class="dash-card-label">Software Quality</div>
+              <div class="dash-card-value">${gameState.quality}%</div>
+            </div>
+          </div>
+
+          <div class="table-card">
+            <div class="table-card-title">
+              <span>Dynamic Risk Register (RMMM)</span>
+              <span style="font-size:11px; color:var(--text-muted); font-weight:400;">Click risk row to inspect RMMM strategy</span>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Risk ID</th>
+                  <th>Risk Description</th>
+                  <th>Probability</th>
+                  <th>Impact</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rmmmRisks.map(r => {
+                let isResolved = gameState.flags[r.flagKey];
+                let statusText = isResolved ? "Mitigated" : (r.id === 'RSK-01' ? 'Critical' : 'Monitored');
+                let colorClass = isResolved ? 'var(--success)' : (r.id === 'RSK-01' ? 'var(--danger)' : 'var(--warning)');
+
+                return `
+                    <tr style="cursor:pointer;" onclick="showRiskDetail('${r.id}')">
+                      <td>${r.id}</td>
+                      <td>${r.title}</td>
+                      <td>${r.probability}</td>
+                      <td>${r.impact}</td>
+                      <td><span style="font-weight:600; color:${colorClass}">${statusText}</span></td>
+                    </tr>
+                  `;
+            }).join('')}
+              </tbody>
+            </table>
+
+            <div id="riskDetailDrawer">
+              ${renderRiskDetailDrawer()}
+            </div>
+          </div>
+        </div>
+      `;
+            container.innerHTML = html;
+        }
+
+        function showRiskDetail(riskId) {
+            gameState.selectedRiskDetail = rmmmRisks.find(r => r.id === riskId);
+            renderAppBody();
+        }
+
+        function renderRiskDetailDrawer() {
+            if (!gameState.selectedRiskDetail) return "";
+            let r = gameState.selectedRiskDetail;
+            let isResolved = gameState.flags[r.flagKey];
+
+            return `
+        <div class="rmmm-detail-box">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong>${r.id}: ${r.title}</strong>
+            <span style="font-size:11px; color:var(--text-muted); cursor:pointer;" onclick="gameState.selectedRiskDetail=null; renderAppBody();">Close</span>
+          </div>
+          <div class="rmmm-detail-grid">
+            <div><strong>Risk Owner:</strong> ${r.owner}</div>
+            <div><strong>RMMM Status:</strong> ${isResolved ? 'Mitigated' : 'Active / Monitored'}</div>
+            <div><strong>Mitigation Strategy:</strong> ${r.mitigation}</div>
+            <div><strong>Monitoring Procedure:</strong> ${r.monitoring}</div>
+            <div style="grid-column: span 2;"><strong>Contingency Plan:</strong> ${r.contingency}</div>
+          </div>
+        </div>
+      `;
+        }
+
+        function renderCalendarApp(container, sc) {
+            let html = `
+        <div>
+          ${renderTimeline(sc.phase || "Development")}
+
+          <div style="margin-bottom:1.25rem;">
+            ${renderDecisionPanel(sc, "calendar")}
+          </div>
+
+          <h3 style="margin-bottom:0.75rem; color:var(--text); font-size:13.5px; font-weight:600;">Workday Schedule</h3>
+          <div class="cal-grid">
+            ${[1, 2, 3, 4, 5].map(d => `
+              <div class="cal-col ${d === sc.day ? 'active-day' : ''}">
+                <div class="cal-col-header">Day ${d} (${getDayName(d)})</div>
+                <div class="cal-item">09:00 AM — Daily Standup</div>
+                ${d === 1 ? `<div class="cal-item ${sc.id === 1 ? 'highlight' : ''}">09:15 AM — Auth Review</div>` : ''}
+                ${d === 1 ? `<div class="cal-item ${sc.id === 2 ? 'highlight' : ''}">01:30 PM — Finance Audit</div>` : ''}
+                ${d === 2 ? `<div class="cal-item ${sc.id === 3 ? 'highlight' : ''}">09:10 AM — Staffing Crisis</div>` : ''}
+                ${d === 2 ? `<div class="cal-item ${sc.id === 4 ? 'highlight' : ''}">02:00 PM — Load Test Audit</div>` : ''}
+                ${d === 2 ? `<div class="cal-item ${sc.id === 5 ? 'highlight' : ''}">04:30 PM — UI Review Meeting</div>` : ''}
+                ${d === 3 ? `<div class="cal-item ${sc.id === 6 ? 'highlight' : ''}">09:30 AM — Scope Sync</div>` : ''}
+                ${d === 3 ? `<div class="cal-item ${sc.id === 7 ? 'highlight' : ''}">01:15 PM — Arch Sync</div>` : ''}
+                ${d === 3 ? `<div class="cal-item ${sc.id === 8 ? 'highlight' : ''}">04:00 PM — Schedule Audit</div>` : ''}
+                ${d === 4 ? `<div class="cal-item ${sc.id === 9 ? 'highlight' : ''}">10:00 AM — Security Audit</div>` : ''}
+                ${d === 4 ? `<div class="cal-item ${sc.id === 10 ? 'highlight' : ''}">02:30 PM — QA Triage</div>` : ''}
+                ${d === 5 ? `<div class="cal-item ${sc.id === 11 ? 'highlight' : ''}">10:30 AM — Payment Sync</div>` : ''}
+                ${d === 5 ? `<div class="cal-item ${sc.id === 12 ? 'highlight' : ''}">03:00 PM — Handover Meeting</div>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+            container.innerHTML = html;
+        }
+
+        function renderTasksApp(container) {
+            let html = `
+        <div>
+          <h3 style="margin-bottom:0.85rem; color:var(--text); font-size:13.5px; font-weight:600;">Work Queue & Today's Checklist</h3>
+          <div>
+            ${gameState.tasks.map(t => `
+              <div class="task-item-row ${t.done ? 'done' : ''}" onclick="switchApp('${t.channel}')">
+                <div class="task-item-left">
+                  <div class="task-checkbox">${t.done ? '✓' : ''}</div>
+                  <span class="task-text">${t.text}</span>
+                </div>
+                <span style="font-size:11px; color:var(--text-muted);">${t.channel.toUpperCase()}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+            container.innerHTML = html;
+        }
+
+        function renderDecisionsApp(container) {
+            if (gameState.decisions.length === 0) {
+                container.innerHTML = `
+          <div style="text-align:center; padding:3rem; color:var(--text-muted);">
+            <p>No decisions recorded yet.</p>
+          </div>
+        `;
+                return;
+            }
+
+            let html = `
+        <div style="display:flex; flex-direction:column; gap:0.85rem;">
+          <h3 style="font-size:13.5px; color:var(--text); font-weight:600;">Recorded Decisions (${gameState.decisions.length})</h3>
+          ${gameState.decisions.map(d => `
+            <div style="background:var(--surface); border:1px solid var(--border); border-radius:5px; padding:0.85rem;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:600; margin-bottom:0.25rem;">
+                <span style="color:var(--text);">Scenario ${d.scenarioId}: ${d.title}</span>
+                <span style="color:var(--text-muted);">${d.channel.toUpperCase()}</span>
+              </div>
+              <div style="font-size:13px; font-weight:500; color:var(--text); margin-bottom:0.35rem;">
+                Option ${d.choiceOpt}: ${d.choiceText}
+              </div>
+              <div style="font-size:12.5px; color:var(--text-secondary); margin-bottom:0.5rem;">
+                ${d.consequence}
+              </div>
+              <div class="delta-pills">
+                ${renderDeltaPills(d.effects)}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+            container.innerHTML = html;
+        }
+
+        function renderFilesApp(container, sc) {
+            let html = `
+        <div>
+          ${renderTimeline(sc.phase || "Development")}
+
+          <div style="margin-bottom:1.25rem;">
+            ${renderDecisionPanel(sc, "files")}
+          </div>
+
+          <h3 style="margin-bottom:0.75rem; color:var(--text); font-size:13.5px; font-weight:600;">Workspace Artifacts</h3>
+          <div class="file-row-list">
+            <div class="file-row">
+              <span>Requirements_Specification_v1.0.pdf</span>
+              <span style="font-size:11px; color:var(--text-muted);">Approved Baseline</span>
+            </div>
+            <div class="file-row">
+              <span>Process_Model_Evaluation_Rules.docx</span>
+              <span style="font-size:11px; color:var(--text-muted);">Evaluation Criteria</span>
+            </div>
+            <div class="file-row">
+              <span>Risk_Management_RMMM_Plan.pdf</span>
+              <span style="font-size:11px; color:var(--text-muted);">Module 2 Governance</span>
+            </div>
+            <div class="file-row">
+              <span>Financial_Audit_Forecast.xlsx</span>
+              <span style="font-size:11px; color:var(--text-muted);">Cost Baseline Variance</span>
+            </div>
+          </div>
+        </div>
+      `;
+            container.innerHTML = html;
+        }
+
+        /* --- NOTIFICATIONS --- */
+        function toggleNotifications() {
+            let dropdown = document.getElementById('notifDropdown');
+            dropdown.classList.toggle('active');
+            renderNotificationsMenu();
+        }
+
+        function markNotificationsRead(e) {
+            e.stopPropagation();
+            gameState.notifications.forEach(n => n.read = true);
+            updateMetricsDisplay();
+            renderNotificationsMenu();
+        }
+
+        function renderNotificationsMenu() {
+            let listEl = document.getElementById('notifList');
+            if (gameState.notifications.length === 0) {
+                listEl.innerHTML = `<div style="padding:0.85rem; text-align:center; font-size:12px; color:var(--text-muted);">No notifications</div>`;
+                return;
+            }
+            listEl.innerHTML = gameState.notifications.map(n => `
+        <div class="notif-item ${!n.read ? 'unread' : ''}">
+          <div class="notif-item-title">${n.title}</div>
+          <div class="notif-item-text">${n.text}</div>
+          <div class="notif-item-time">${n.time}</div>
+        </div>
+      `).join('');
+        }
+
+        /* --- GAMEPLAY ACTIONS --- */
+        function selectChoice(choiceIdx) {
+            if (gameState.hasAnsweredCurrent) return;
+
+            let sc = scenarios[gameState.currentScenario];
+            let choice = sc.choices[choiceIdx];
+
+            // Apply Effects
+            gameState.budget += choice.effects.budget;
+            gameState.weeksDelayed += choice.effects.scheduleDelay || 0;
+            gameState.risk = Math.max(0, Math.min(100, gameState.risk + choice.effects.risk));
+            gameState.morale = Math.max(0, Math.min(100, gameState.morale + choice.effects.morale));
+            gameState.client = Math.max(0, Math.min(100, gameState.client + choice.effects.client));
+            gameState.quality = Math.max(0, Math.min(100, gameState.quality + choice.effects.quality));
+
+            // Apply Scores
+            gameState.scores.waterfall += choice.score.waterfall;
+            gameState.scores.agile += choice.score.agile;
+            gameState.scores.spiral += choice.score.spiral;
+            gameState.scores.incremental += choice.score.incremental;
+
+            if (choice.setFlag) {
+                gameState.flags[choice.setFlag] = true;
+            }
+
+            gameState.decisions.push({
+                scenarioId: sc.id,
+                title: sc.subject,
+                channel: sc.channel,
+                choiceOpt: choice.opt,
+                choiceText: choice.text,
+                consequence: choice.consequence,
+                effects: choice.effects,
+                primaryModel: choice.primaryModel,
+                chatReaction: choice.chatReaction
+            });
+
+            gameState.hasAnsweredCurrent = true;
+            updateMetricsDisplay();
+            renderAppBody();
+        }
+
+        function nextScenario() {
+            if (gameState.currentScenario + 1 >= scenarios.length) {
+                startClosureSequence();
+            } else {
+                loadScenario(gameState.currentScenario + 1);
+            }
+        }
+
+        /* --- PROJECT CLOSURE SEQUENCE --- */
+        function startClosureSequence() {
+            document.getElementById('simulatorScreen').classList.remove('active');
+            document.getElementById('closureScreen').classList.add('active');
+
+            let container = document.getElementById('closureStepsContainer');
+            let projWeeks = 20 + gameState.weeksDelayed;
+
+            container.innerHTML = `
+        <div class="closure-step"><span>04:42 PM — Handover Strategy</span><strong>Recorded</strong></div>
+        <div class="closure-step"><span>05:02 PM — QA Regression Sign-off</span><strong>${gameState.quality >= 70 ? 'Passed' : 'Conditional'}</strong></div>
+        <div class="closure-step"><span>05:18 PM — Client Board Meeting</span><strong>Concluded</strong></div>
+        <div class="closure-step"><span>Final Duration</span><strong>${projWeeks} Weeks</strong></div>
+        <div class="closure-step"><span>Final Budget Balance</span><strong>₹${gameState.budget.toLocaleString('en-IN')}</strong></div>
+        <div class="closure-step"><span>Final Software Quality</span><strong>${gameState.quality}%</strong></div>
+      `;
+
+            setTimeout(() => {
+                document.getElementById('proceedResultsBtn').style.display = 'inline-flex';
+            }, 600);
+        }
+
+        /* --- LARGEST REMAINDER METHOD FOR 100% SUM --- */
+        function calculateLargestRemainderPercentages(scores) {
+            let total = scores.waterfall + scores.agile + scores.spiral + scores.incremental;
+            if (total === 0) return { waterfall: 25, agile: 25, spiral: 25, incremental: 25 };
+
+            let keys = ["waterfall", "agile", "spiral", "incremental"];
+            let items = keys.map(k => {
+                let raw = (scores[k] / total) * 100;
+                return {
+                    key: k,
+                    floor: Math.floor(raw),
+                    rem: raw - Math.floor(raw)
+                };
+            });
+
+            let currentSum = items.reduce((sum, item) => sum + item.floor, 0);
+            let diff = 100 - currentSum;
+
+            items.sort((a, b) => b.rem - a.rem);
+
+            for (let i = 0; i < diff; i++) {
+                items[i].floor += 1;
+            }
+
+            let res = {};
+            items.forEach(item => {
+                res[item.key] = item.floor;
+            });
+            return res;
+        }
+
+        /* --- RESULTS SCREEN --- */
+        function showResultsScreen() {
+            document.getElementById('closureScreen').classList.remove('active');
+            document.getElementById('simulatorScreen').classList.remove('active');
+            document.getElementById('resultsScreen').classList.add('active');
+
+            let pcts = calculateLargestRemainderPercentages(gameState.scores);
+
+            let wPct = pcts.waterfall;
+            let aPct = pcts.agile;
+            let sPct = pcts.spiral;
+            let iPct = pcts.incremental;
+
+            let modelList = [
+                { name: "Waterfall", score: gameState.scores.waterfall, pct: wPct },
+                { name: "Agile", score: gameState.scores.agile, pct: aPct },
+                { name: "Spiral", score: gameState.scores.spiral, pct: sPct },
+                { name: "Incremental", score: gameState.scores.incremental, pct: iPct }
+            ];
+
+            modelList.sort((a, b) => b.pct - a.pct);
+
+            let top1 = modelList[0];
+            let top2 = modelList[1];
+            let isHybrid = (top1.pct - top2.pct) <= 8;
+
+            let domTitle = document.getElementById('dominantTitle');
+            let domDesc = document.getElementById('profileDescription');
+
+            if (isHybrid) {
+                domTitle.innerText = "Balanced / Hybrid Decision Profile";
+                domDesc.innerText = `Your decision pattern drew heavily from multiple process model philosophies (${top1.name} ${top1.pct}% vs ${top2.name} ${top2.pct}%), demonstrating an adaptive hybrid approach. You dynamically balanced baseline controls with customer collaboration, risk prototyping, and incremental deliveries based on crisis context.`;
+            } else {
+                domTitle.innerText = `${top1.name}-Oriented Decision Profile (${top1.pct}%)`;
+                domDesc.innerText = getModelSpecificDescription(top1.name, top1.pct);
+            }
+
+            // Render Flat Progress Bars
+            let barsContainer = document.getElementById('modelBarsContainer');
+            barsContainer.innerHTML = `
+        <div class="flat-bar-row">
+          <div class="flat-bar-header"><span>Waterfall Model</span><span>${wPct}% (${gameState.scores.waterfall} pts)</span></div>
+          <div class="flat-bar-track"><div class="flat-bar-fill" style="width:${wPct}%"></div></div>
+        </div>
+        <div class="flat-bar-row">
+          <div class="flat-bar-header"><span>Agile Methodology</span><span>${aPct}% (${gameState.scores.agile} pts)</span></div>
+          <div class="flat-bar-track"><div class="flat-bar-fill" style="width:${aPct}%"></div></div>
+        </div>
+        <div class="flat-bar-row">
+          <div class="flat-bar-header"><span>Spiral Model</span><span>${sPct}% (${gameState.scores.spiral} pts)</span></div>
+          <div class="flat-bar-track"><div class="flat-bar-fill" style="width:${sPct}%"></div></div>
+        </div>
+        <div class="flat-bar-row">
+          <div class="flat-bar-header"><span>Incremental Model</span><span>${iPct}% (${gameState.scores.incremental} pts)</span></div>
+          <div class="flat-bar-track"><div class="flat-bar-fill" style="width:${iPct}%"></div></div>
+        </div>
+      `;
+
+            // Render Academic Evidence
+            let evidenceList = document.getElementById('evidenceList');
+            evidenceList.innerHTML = generateAcademicRationales();
+
+            // Render Final Metrics
+            let schedSummary = gameState.weeksDelayed === 0 ? "On track" : `+${gameState.weeksDelayed} wks delay`;
+            let finalGrid = document.getElementById('finalMetricsGrid');
+            finalGrid.innerHTML = `
+        <div class="dash-card">
+          <div class="dash-card-label">Remaining Budget</div>
+          <div class="dash-card-value">₹${gameState.budget.toLocaleString('en-IN')}</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-label">Schedule Status</div>
+          <div class="dash-card-value">${schedSummary}</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-label">Residual Risk</div>
+          <div class="dash-card-value">${gameState.risk}%</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-label">Software Quality</div>
+          <div class="dash-card-value">${gameState.quality}%</div>
+        </div>
+      `;
+
+            // Render History Table
+            let tableBody = document.getElementById('historyTableBody');
+            tableBody.innerHTML = gameState.decisions.map(d => `
+        <tr>
+          <td>${d.scenarioId}</td>
+          <td>${d.title}</td>
+          <td>${d.channel.toUpperCase()}</td>
+          <td>Option ${d.choiceOpt}: ${d.choiceText}</td>
+          <td><strong>${d.primaryModel}</strong></td>
+          <td>${d.consequence}</td>
+        </tr>
+      `).join('');
+        }
+
+        function generateAcademicRationales() {
+            let items = [];
+
+            if (gameState.flags.databaseRiskAddressed || gameState.flags.securityRiskMitigated) {
+                items.push(`<li><strong>Risk-Driven Engineering (RMMM / Spiral Model):</strong> In technical uncertainty scenarios (Scenario 4 & 9), you executed empirical prototyping and security vulnerability mitigation, capping residual risk at ${gameState.risk}%.</li>`);
+            }
+
+            let budgetDiff = 1000000 - gameState.budget;
+            if (budgetDiff <= 0) {
+                items.push(`<li><strong>Cost Control (Budget Management):</strong> You managed expenditure effectively, finishing within the budget baseline (Balance: ₹${gameState.budget.toLocaleString('en-IN')}).</li>`);
+            } else {
+                items.push(`<li><strong>Financial Resource Allocation:</strong> You authorized ₹${budgetDiff.toLocaleString('en-IN')} in targeted spending for technical spikes, prototyping, and defect remediation.</li>`);
+            }
+
+            if (gameState.weeksDelayed === 0) {
+                items.push(`<li><strong>Schedule Control & Critical Path Governance:</strong> You protected the 20-week baseline deadline through effective scope prioritization.</li>`);
+            } else {
+                items.push(`<li><strong>Schedule Trade-off Analysis:</strong> You absorbed a +${gameState.weeksDelayed} week schedule adjustment to ensure security validation and software quality.</li>`);
+            }
+
+            if (gameState.flags.scopeControlled) {
+                items.push(`<li><strong>Scope & Requirement Management:</strong> In response to scope creep (Scenario 6 & 11), you enforced formal governance or backlog grooming to prevent scope inflation.</li>`);
+            }
+
+            return items.join('');
+        }
+
+        function getModelSpecificDescription(modelName, pct) {
+            if (modelName === "Waterfall") {
+                return `Your decision pattern strongly reflects Waterfall philosophy (${pct}%). You consistently prioritized strict scope baselining, formal change control, up-front specification, and protecting scheduled milestone baselines.`;
+            } else if (modelName === "Agile") {
+                return `Your decision pattern strongly reflects Agile philosophy (${pct}%). You consistently prioritized customer collaboration, backlog reprioritization, rapid response to changing user needs, and delivering working software over rigid specifications.`;
+            } else if (modelName === "Spiral") {
+                return `Your decision pattern strongly reflects Spiral Model philosophy (${pct}%). You consistently prioritized empirical risk assessment, rapid prototyping, technical uncertainty elimination, and systematic RMMM mitigation.`;
+            } else if (modelName === "Incremental") {
+                return `Your decision pattern strongly reflects Incremental Model philosophy (${pct}%). You consistently prioritized staged functional deliveries, releasing stable core modules early while deferring secondary features.`;
+            }
+            return "";
+        }
+    </script>
+</body>
+
+</html>
